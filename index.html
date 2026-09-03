@@ -9,102 +9,112 @@
 
 <body>
 
-<div class="decor decor1">✦</div>
-<div class="decor decor2">♡</div>
-<div class="decor decor3">✿</div>
-<div class="decor decor4">✦</div>
-<div class="decor decor5">♡</div>
+  <div class="floating f1">✦</div>
+  <div class="floating f2">♡</div>
+  <div class="floating f3">✿</div>
+  <div class="floating f4">✦</div>
+  <div class="floating f5">♡</div>
 
-<div class="app">
+  <main class="app">
 
-  <div class="title">
-    <div class="mini">✦ PHOTOBOOTH ✦</div>
-    <h1>Capture the Moment 📸</h1>
-    <p>Ambil 2 foto dan buat kenanganmu!</p>
-  </div>
+    <div class="header">
+      <div class="logo">✦ PHOTOBOOTH ✦</div>
+      <h1>Capture the Moment</h1>
+      <p>Ambil dua foto dan abadikan momennya 📸</p>
+    </div>
 
-  <div class="booth">
+    <section class="booth">
 
-    <div class="photos">
+      <!-- CAMERA -->
+      <div id="cameraBox" class="camera-box">
 
-      <div class="photo-frame">
-        <div class="number">01</div>
-        <div class="empty-photo">📷</div>
-        <img id="photo1">
+        <video id="camera" autoplay playsinline></video>
+
+        <div id="cameraPlaceholder" class="camera-placeholder">
+          <div>📷</div>
+          <span>Kamera belum dibuka</span>
+        </div>
+
       </div>
 
-      <div class="photo-frame">
-        <div class="number">02</div>
-        <div class="empty-photo">📷</div>
-        <img id="photo2">
+      <!-- HASIL 2 FOTO -->
+      <div id="photoResult" class="photo-result">
+
+        <div class="photo-card">
+          <span class="photo-number">01</span>
+          <div class="photo-empty">📷</div>
+          <img id="photo1" alt="Foto pertama">
+        </div>
+
+        <div class="photo-card">
+          <span class="photo-number">02</span>
+          <div class="photo-empty">📷</div>
+          <img id="photo2" alt="Foto kedua">
+        </div>
+
       </div>
+
+      <canvas id="canvas"></canvas>
+
+    </section>
+
+    <div class="counter" id="counter">
+      Foto 1 dari 2
+    </div>
+
+    <!-- PILIH SUMBER -->
+    <div class="main-buttons">
+
+      <button id="cameraBtn" class="btn camera-btn">
+        📷 Buka Kamera
+      </button>
+
+      <label for="galleryInput" class="btn gallery-btn">
+        🖼️ Pilih Galeri
+      </label>
+
+      <input
+        type="file"
+        id="galleryInput"
+        accept="image/*"
+        multiple
+      >
 
     </div>
 
-    <video id="camera" autoplay playsinline></video>
-    <canvas id="canvas"></canvas>
+    <!-- CONTROLS KAMERA -->
+    <div id="cameraControls" class="camera-controls hidden">
 
-    <div id="cameraPlaceholder">
-      <span>📸</span>
-      <p>Kamera belum dibuka</p>
+      <div id="countdown"></div>
+
+      <button id="captureBtn" class="capture-btn">
+        ●
+      </button>
+
+      <button id="stopBtn" class="close-camera">
+        ✕ Tutup Kamera
+      </button>
+
     </div>
 
-  </div>
+    <!-- HASIL -->
+    <div id="resultControls" class="result-controls hidden">
 
-  <div class="counter" id="counter">
-    Foto 1 dari 2
-  </div>
+      <button id="downloadBtn" class="btn save-btn">
+        💾 Simpan Hasil
+      </button>
 
-  <div class="buttons">
+      <button id="againBtn" class="btn again-btn">
+        🔄 Ulangi
+      </button>
 
-    <button id="cameraBtn">
-      📷 Buka Kamera
-    </button>
+    </div>
 
-    <label for="galleryInput" class="galleryBtn">
-      🖼️ Pilih dari Galeri
-    </label>
+    <div id="status"></div>
 
-    <input
-      type="file"
-      id="galleryInput"
-      accept="image/*"
-      multiple
-    >
+  </main>
 
-  </div>
-
-  <div id="cameraControls" class="hidden">
-
-    <div id="countdown"></div>
-
-    <button id="captureBtn" class="capture">
-      ●
-    </button>
-
-    <button id="stopBtn">
-      ✕ Tutup Kamera
-    </button>
-
-  </div>
-
-  <div id="resultControls" class="hidden">
-
-    <button id="downloadBtn">
-      💾 Simpan Hasil
-    </button>
-
-    <button id="againBtn">
-      🔄 Ulangi
-    </button>
-
-  </div>
-
-  <p id="status"></p>
-
-</div>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 
 </body>
 </html>
