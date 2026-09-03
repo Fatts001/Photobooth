@@ -2,119 +2,50 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dreamy PhotoBooth</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+  <title>Mini Battle Royale 3D</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-  <div class="floating f1">✦</div>
-  <div class="floating f2">♡</div>
-  <div class="floating f3">✿</div>
-  <div class="floating f4">✦</div>
-  <div class="floating f5">♡</div>
+<div id="game"></div>
 
-  <main class="app">
+<div id="hud">
+  <div class="status">
+    ❤️ <span id="hp">100</span>
+    <span class="kills">☠️ <span id="kills">0</span></span>
+  </div>
 
-    <div class="header">
-      <div class="logo">✦ PHOTOBOOTH ✦</div>
-      <h1>Capture the Moment</h1>
-      <p>Ambil dua foto dan abadikan momennya 📸</p>
-    </div>
+  <div id="zone">ZONE 100%</div>
 
-    <section class="booth">
+  <div id="crosshair">+</div>
 
-      <!-- CAMERA -->
-      <div id="cameraBox" class="camera-box">
+  <div id="message"></div>
 
-        <video id="camera" autoplay playsinline></video>
+  <div id="joystick">
+    <div id="stick"></div>
+  </div>
 
-        <div id="cameraPlaceholder" class="camera-placeholder">
-          <div>📷</div>
-          <span>Kamera belum dibuka</span>
-        </div>
+  <div class="buttons">
+    <button id="sprint">🏃</button>
+    <button id="shoot">🔫</button>
+  </div>
+</div>
 
-      </div>
+<div id="start">
+  <h1>MINI BATTLE ROYALE</h1>
+  <p>3D Survival Game</p>
+  <button id="play">PLAY</button>
+</div>
 
-      <!-- HASIL 2 FOTO -->
-      <div id="photoResult" class="photo-result">
+<div id="gameover">
+  <h1 id="result">GAME OVER</h1>
+  <p>KILL: <span id="finalKills">0</span></p>
+  <button onclick="location.reload()">MAIN LAGI</button>
+</div>
 
-        <div class="photo-card">
-          <span class="photo-number">01</span>
-          <div class="photo-empty">📷</div>
-          <img id="photo1" alt="Foto pertama">
-        </div>
-
-        <div class="photo-card">
-          <span class="photo-number">02</span>
-          <div class="photo-empty">📷</div>
-          <img id="photo2" alt="Foto kedua">
-        </div>
-
-      </div>
-
-      <canvas id="canvas"></canvas>
-
-    </section>
-
-    <div class="counter" id="counter">
-      Foto 1 dari 2
-    </div>
-
-    <!-- PILIH SUMBER -->
-    <div class="main-buttons">
-
-      <button id="cameraBtn" class="btn camera-btn">
-        📷 Buka Kamera
-      </button>
-
-      <label for="galleryInput" class="btn gallery-btn">
-        🖼️ Pilih Galeri
-      </label>
-
-      <input
-        type="file"
-        id="galleryInput"
-        accept="image/*"
-        multiple
-      >
-
-    </div>
-
-    <!-- CONTROLS KAMERA -->
-    <div id="cameraControls" class="camera-controls hidden">
-
-      <div id="countdown"></div>
-
-      <button id="captureBtn" class="capture-btn">
-        ●
-      </button>
-
-      <button id="stopBtn" class="close-camera">
-        ✕ Tutup Kamera
-      </button>
-
-    </div>
-
-    <!-- HASIL -->
-    <div id="resultControls" class="result-controls hidden">
-
-      <button id="downloadBtn" class="btn save-btn">
-        💾 Simpan Hasil
-      </button>
-
-      <button id="againBtn" class="btn again-btn">
-        🔄 Ulangi
-      </button>
-
-    </div>
-
-    <div id="status"></div>
-
-  </main>
-
-  <script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
+<script src="script.js"></script>
 
 </body>
 </html>
