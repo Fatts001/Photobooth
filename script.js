@@ -1,22 +1,36 @@
+// ===============================
+// MINI BATTLE ROYALE 3D V1 FIX
+// ===============================
+
 const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(0x82c9e8);
-scene.fog = new THREE.Fog(0x82c9e8, 40, 130);
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 50, 150);
 
+
+// CAMERA
 const camera = new THREE.PerspectiveCamera(
   65,
-  innerWidth / innerHeight,
+  window.innerWidth / window.innerHeight,
   0.1,
-  200
+  300
 );
 
+camera.position.set(0, 7, 12);
+
+
+// RENDERER
 const renderer = new THREE.WebGLRenderer({
-  antialias: false
+  antialias: true
 });
 
-renderer.setSize(innerWidth, innerHeight);
+renderer.setSize(
+  window.innerWidth,
+  window.innerHeight
+);
+
 renderer.setPixelRatio(
-  Math.min(devicePixelRatio, 1.5)
+  Math.min(window.devicePixelRatio, 1.5)
 );
 
 document
@@ -25,290 +39,385 @@ document
 
 
 // LIGHT
-
-scene.add(
-  new THREE.HemisphereLight(
-    0xffffff,
-    0x456040,
-    2
-  )
+const ambient = new THREE.HemisphereLight(
+  0xffffff,
+  0x447744,
+  2
 );
+
+scene.add(ambient);
 
 const sun = new THREE.DirectionalLight(
   0xffffff,
   2
 );
 
-sun.position.set(30,50,20);
-
+sun.position.set(30, 50, 20);
 scene.add(sun);
 
 
+// ===============================
 // GROUND
+// ===============================
 
 const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(120,120),
+  new THREE.PlaneGeometry(140, 140),
   new THREE.MeshLambertMaterial({
-    color: 0x4d984d
+    color: 0x4d994d
   })
 );
 
 ground.rotation.x = -Math.PI / 2;
-
 scene.add(ground);
 
 
 // ROAD
-
-const road = new THREE.Mesh(
-  new THREE.PlaneGeometry(12,120),
+const road1 = new THREE.Mesh(
+  new THREE.PlaneGeometry(12, 140),
   new THREE.MeshLambertMaterial({
     color: 0x555555
   })
 );
 
-road.rotation.x = -Math.PI / 2;
-road.position.y = .01;
+road1.rotation.x = -Math.PI / 2;
+road1.position.y = 0.01;
 
-scene.add(road);
+scene.add(road1);
+
 
 const road2 = new THREE.Mesh(
-  new THREE.PlaneGeometry(120,10),
+  new THREE.PlaneGeometry(140, 10),
   new THREE.MeshLambertMaterial({
     color: 0x555555
   })
 );
 
 road2.rotation.x = -Math.PI / 2;
-road2.position.y = .02;
+road2.position.y = 0.02;
 
 scene.add(road2);
 
 
+// ===============================
 // BUILDINGS
+// ===============================
 
-function building(x,z) {
+function createBuilding(x, z) {
 
-  const w = 5 + Math.random()*5;
-  const d = 5 + Math.random()*5;
-  const h = 4 + Math.random()*6;
+  const width = 5 + Math.random() * 5;
+  const depth = 5 + Math.random() * 5;
+  const height = 4 + Math.random() * 6;
 
-  const b = new THREE.Mesh(
-    new THREE.BoxGeometry(w,h,d),
+  const building = new THREE.Mesh(
+    new THREE.BoxGeometry(
+      width,
+      height,
+      depth
+    ),
     new THREE.MeshLambertMaterial({
       color:
-        Math.random() > .5
-        ? 0xb9a38d
-        : 0x8b969f
+        Math.random() > 0.5
+          ? 0xb9a38d
+          : 0x89939b
     })
   );
 
-  b.position.set(x,h/2,z);
+  building.position.set(
+    x,
+    height / 2,
+    z
+  );
 
-  scene.add(b);
+  scene.add(building);
 }
 
-for(let i=0;i<20;i++){
+
+for (let i = 0; i < 25; i++) {
 
   const x =
-    (Math.random()-.5)*95;
+    (Math.random() - 0.5) * 110;
 
   const z =
-    (Math.random()-.5)*95;
+    (Math.random() - 0.5) * 110;
 
-  if(Math.abs(x)<10 || Math.abs(z)<8)
-    continue;
+  if (
+    Math.abs(x) < 12 &&
+    Math.abs(z) < 12
+  ) continue;
 
-  building(x,z);
+  createBuilding(x, z);
 }
 
 
+// ===============================
 // TREES
+// ===============================
 
-function tree(x,z){
+function createTree(x, z) {
 
   const trunk = new THREE.Mesh(
     new THREE.CylinderGeometry(
-      .25,.35,2,7
+      0.25,
+      0.35,
+      2,
+      7
     ),
     new THREE.MeshLambertMaterial({
-      color:0x70452b
+      color: 0x70452b
     })
   );
 
-  trunk.position.set(x,1,z);
+  trunk.position.set(
+    x,
+    1,
+    z
+  );
 
   scene.add(trunk);
 
+
   const leaves = new THREE.Mesh(
-    new THREE.SphereGeometry(2,7,7),
+    new THREE.SphereGeometry(
+      2,
+      8,
+      8
+    ),
     new THREE.MeshLambertMaterial({
-      color:0x247a38
+      color: 0x267a38
     })
   );
 
-  leaves.position.set(x,3,z);
+  leaves.position.set(
+    x,
+    3,
+    z
+  );
 
   scene.add(leaves);
 }
 
-for(let i=0;i<35;i++){
 
-  tree(
-    (Math.random()-.5)*105,
-    (Math.random()-.5)*105
+for (let i = 0; i < 40; i++) {
+
+  createTree(
+    (Math.random() - 0.5) * 120,
+    (Math.random() - 0.5) * 120
   );
+
 }
 
 
+// ===============================
 // PLAYER
+// ===============================
 
 const player = new THREE.Group();
 
-const body = new THREE.Mesh(
-  new THREE.BoxGeometry(1.2,1.7,.8),
+
+// BODY
+const playerBody = new THREE.Mesh(
+  new THREE.BoxGeometry(
+    1.2,
+    1.7,
+    0.8
+  ),
   new THREE.MeshLambertMaterial({
-    color:0x2477e8
+    color: 0x2477e8
   })
 );
 
-body.position.y=1.5;
+playerBody.position.y = 1.5;
 
-player.add(body);
+player.add(playerBody);
 
 
-const head = new THREE.Mesh(
-  new THREE.SphereGeometry(.48,10,8),
+// HEAD
+const playerHead = new THREE.Mesh(
+  new THREE.SphereGeometry(
+    0.48,
+    12,
+    8
+  ),
   new THREE.MeshLambertMaterial({
-    color:0xffbd91
+    color: 0xffbd91
   })
 );
 
-head.position.y=2.65;
+playerHead.position.y = 2.65;
 
-player.add(head);
+player.add(playerHead);
 
 
-const gun = new THREE.Mesh(
-  new THREE.BoxGeometry(.2,.2,1.5),
+// GUN
+const playerGun = new THREE.Mesh(
+  new THREE.BoxGeometry(
+    0.2,
+    0.2,
+    1.5
+  ),
   new THREE.MeshLambertMaterial({
-    color:0x202020
+    color: 0x202020
   })
 );
 
-gun.position.set(.65,1.5,-.7);
+playerGun.position.set(
+  0.65,
+  1.5,
+  -0.7
+);
 
-player.add(gun);
+player.add(playerGun);
 
-player.position.set(0,0,15);
+
+player.position.set(
+  0,
+  0,
+  15
+);
 
 scene.add(player);
 
 
+// ===============================
 // ENEMIES
+// ===============================
 
-const enemies=[];
+const enemies = [];
 
-function enemy(){
 
-  const e = new THREE.Group();
+function createEnemy() {
+
+  const enemy = new THREE.Group();
+
 
   const body = new THREE.Mesh(
-    new THREE.BoxGeometry(1.2,1.7,.8),
+    new THREE.BoxGeometry(
+      1.2,
+      1.7,
+      0.8
+    ),
     new THREE.MeshLambertMaterial({
-      color:0xd93636
+      color: 0xd93636
     })
   );
 
-  body.position.y=1.5;
+  body.position.y = 1.5;
 
-  e.add(body);
+  enemy.add(body);
 
 
   const head = new THREE.Mesh(
-    new THREE.SphereGeometry(.48,10,8),
+    new THREE.SphereGeometry(
+      0.48,
+      12,
+      8
+    ),
     new THREE.MeshLambertMaterial({
-      color:0xffb48b
+      color: 0xffb48b
     })
   );
 
-  head.position.y=2.65;
+  head.position.y = 2.65;
 
-  e.add(head);
+  enemy.add(head);
 
+
+  let x;
+  let z;
 
   do {
 
-    e.position.set(
-      (Math.random()-.5)*85,
-      0,
-      (Math.random()-.5)*85
-    );
+    x =
+      (Math.random() - 0.5) * 100;
 
-  } while(
-    e.position.distanceTo(player.position)<18
+    z =
+      (Math.random() - 0.5) * 100;
+
+  } while (
+    Math.sqrt(
+      x * x +
+      (z - 15) * (z - 15)
+    ) < 20
   );
 
 
-  e.hp=3;
+  enemy.position.set(
+    x,
+    0,
+    z
+  );
 
-  e.speed=.012+
-    Math.random()*.012;
 
-  scene.add(e);
+  enemy.hp = 3;
+  enemy.speed =
+    0.025 +
+    Math.random() * 0.02;
 
-  enemies.push(e);
+
+  scene.add(enemy);
+
+  enemies.push(enemy);
 }
 
-for(let i=0;i<10;i++)
-  enemy();
+
+for (let i = 0; i < 10; i++) {
+  createEnemy();
+}
 
 
+// ===============================
 // ZONE
+// ===============================
 
-let zoneRadius=55;
+let zoneRadius = 60;
 
 const zone = new THREE.Mesh(
   new THREE.RingGeometry(
-    54.5,
-    55,
-    80
+    59.5,
+    60,
+    96
   ),
   new THREE.MeshBasicMaterial({
-    color:0x26a9ff,
-    transparent:true,
-    opacity:.8,
-    side:THREE.DoubleSide
+    color: 0x2299ff,
+    transparent: true,
+    opacity: 0.8,
+    side: THREE.DoubleSide
   })
 );
 
-zone.rotation.x=-Math.PI/2;
-zone.position.y=.05;
+zone.rotation.x = -Math.PI / 2;
+zone.position.y = 0.05;
 
 scene.add(zone);
 
 
-// GAME
+// ===============================
+// GAME VARIABLES
+// ===============================
 
-let hp=100;
-let kills=0;
-let playing=false;
-let sprint=false;
+let hp = 100;
+let kills = 0;
+let playing = false;
+let sprint = false;
 
+
+// UI
 const hpEl =
   document.getElementById("hp");
 
-const killEl =
+const killsEl =
   document.getElementById("kills");
 
 const zoneEl =
   document.getElementById("zone");
 
-const message =
+const messageEl =
   document.getElementById("message");
 
 
+// ===============================
 // JOYSTICK
+// ===============================
 
 const joystick =
   document.getElementById("joystick");
@@ -316,229 +425,317 @@ const joystick =
 const stick =
   document.getElementById("stick");
 
-let joyX=0;
-let joyY=0;
-let active=false;
+let joyX = 0;
+let joyY = 0;
+let joystickActive = false;
 
-function moveStick(x,y){
 
-  const r =
+function updateJoystick(x, y) {
+
+  const rect =
     joystick.getBoundingClientRect();
 
-  const cx =
-    r.left+r.width/2;
+  const centerX =
+    rect.left + rect.width / 2;
 
-  const cy =
-    r.top+r.height/2;
+  const centerY =
+    rect.top + rect.height / 2;
 
-  let dx=x-cx;
-  let dy=y-cy;
+  let dx = x - centerX;
+  let dy = y - centerY;
 
-  const max=r.width/2-25;
+  const max =
+    rect.width / 2 - 25;
 
-  const dist=
-    Math.sqrt(dx*dx+dy*dy);
+  const distance =
+    Math.sqrt(
+      dx * dx +
+      dy * dy
+    );
 
-  if(dist>max){
+  if (distance > max) {
 
-    dx=dx/dist*max;
-    dy=dy/dist*max;
+    dx =
+      dx / distance * max;
 
+    dy =
+      dy / distance * max;
   }
 
-  stick.style.transform =
-    `translate(${dx}px,${dy}px)`;
 
-  joyX=dx/max;
-  joyY=dy/max;
+  stick.style.transform =
+    `translate(${dx}px, ${dy}px)`;
+
+
+  joyX = dx / max;
+  joyY = dy / max;
 }
+
 
 joystick.addEventListener(
   "touchstart",
-  e=>{
-    active=true;
+  function(e) {
 
-    const t=e.touches[0];
+    e.preventDefault();
 
-    moveStick(
-      t.clientX,
-      t.clientY
+    joystickActive = true;
+
+    const touch =
+      e.touches[0];
+
+    updateJoystick(
+      touch.clientX,
+      touch.clientY
     );
+
   },
-  {passive:false}
+  { passive: false }
 );
+
 
 joystick.addEventListener(
   "touchmove",
-  e=>{
-    if(!active)return;
+  function(e) {
 
-    const t=e.touches[0];
+    e.preventDefault();
 
-    moveStick(
-      t.clientX,
-      t.clientY
+    if (!joystickActive)
+      return;
+
+    const touch =
+      e.touches[0];
+
+    updateJoystick(
+      touch.clientX,
+      touch.clientY
     );
+
   },
-  {passive:false}
+  { passive: false }
 );
+
 
 joystick.addEventListener(
   "touchend",
-  ()=>{
-    active=false;
+  function() {
 
-    joyX=0;
-    joyY=0;
+    joystickActive = false;
 
-    stick.style.transform=
+    joyX = 0;
+    joyY = 0;
+
+    stick.style.transform =
       "translate(0,0)";
   }
 );
 
 
+// ===============================
 // SPRINT
+// ===============================
 
-const sprintBtn =
+const sprintButton =
   document.getElementById("sprint");
 
-sprintBtn.addEventListener(
+
+sprintButton.addEventListener(
   "touchstart",
-  e=>{
+  function(e) {
+
     e.preventDefault();
-    sprint=true;
-  }
+
+    sprint = true;
+
+  },
+  { passive: false }
 );
 
-sprintBtn.addEventListener(
+
+sprintButton.addEventListener(
   "touchend",
-  ()=>{
-    sprint=false;
+  function() {
+
+    sprint = false;
+
   }
 );
 
 
+// ===============================
 // SHOOT
+// ===============================
 
-const shootBtn =
+const shootButton =
   document.getElementById("shoot");
 
-shootBtn.addEventListener(
+
+shootButton.addEventListener(
   "touchstart",
-  e=>{
+  function(e) {
+
     e.preventDefault();
+
     shoot();
+
+  },
+  { passive: false }
+);
+
+
+shootButton.addEventListener(
+  "click",
+  function() {
+
+    shoot();
+
   }
 );
 
-shootBtn.addEventListener(
-  "click",
-  shoot
-);
 
-function shoot(){
+function shoot() {
 
-  if(!playing)return;
+  if (!playing)
+    return;
 
-  let target=null;
-  let distance=Infinity;
 
-  enemies.forEach(e=>{
+  let target = null;
+  let closest = Infinity;
 
-    if(!e.visible)return;
 
-    const d =
-      e.position.distanceTo(
+  enemies.forEach(function(enemy) {
+
+    if (!enemy.visible)
+      return;
+
+
+    const distance =
+      enemy.position.distanceTo(
         player.position
       );
 
-    if(d<distance){
 
-      distance=d;
-      target=e;
+    if (
+      distance < closest &&
+      distance < 25
+    ) {
+
+      closest = distance;
+      target = enemy;
 
     }
 
   });
 
-  if(
-    target &&
-    distance<22
-  ){
 
-    target.hp--;
+  if (!target)
+    return;
 
-    target.scale.set(
-      1.2,1.2,1.2
-    );
 
-    setTimeout(()=>{
-      if(target.visible)
-        target.scale.set(1,1,1);
-    },100);
+  target.hp--;
 
-    if(target.hp<=0){
 
-      target.visible=false;
+  target.scale.set(
+    1.25,
+    1.25,
+    1.25
+  );
 
-      kills++;
 
-      killEl.textContent=kills;
+  setTimeout(function() {
 
-      message.textContent=
-        "💥 ELIMINATED!";
+    if (target.visible) {
 
-      setTimeout(()=>{
-        message.textContent="";
-      },700);
+      target.scale.set(
+        1,
+        1,
+        1
+      );
 
-      if(
-        enemies.every(
-          e=>!e.visible
-        )
-      ){
+    }
 
-        win();
+  }, 100);
 
-      }
+
+  if (target.hp <= 0) {
+
+    target.visible = false;
+
+    kills++;
+
+    killsEl.textContent =
+      kills;
+
+
+    messageEl.textContent =
+      "💥 ELIMINATED!";
+
+
+    setTimeout(function() {
+
+      messageEl.textContent = "";
+
+    }, 700);
+
+
+    if (
+      enemies.every(
+        e => !e.visible
+      )
+    ) {
+
+      win();
 
     }
 
   }
+
 }
 
 
+// ===============================
 // PLAYER MOVEMENT
+// ===============================
 
-function updatePlayer(){
+function updatePlayer() {
 
-  if(!playing)return;
+  if (!playing)
+    return;
+
 
   const speed =
-    sprint ? .32 : .18;
+    sprint
+      ? 0.35
+      : 0.18;
+
 
   player.position.x +=
-    joyX*speed;
+    joyX * speed;
+
 
   player.position.z +=
-    joyY*speed;
+    joyY * speed;
+
 
   player.position.x =
     THREE.MathUtils.clamp(
       player.position.x,
-      -57,57
+      -65,
+      65
     );
+
 
   player.position.z =
     THREE.MathUtils.clamp(
       player.position.z,
-      -57,57
+      -65,
+      65
     );
 
-  if(
-    Math.abs(joyX)>.1 ||
-    Math.abs(joyY)>.1
-  ){
+
+  if (
+    Math.abs(joyX) > 0.1 ||
+    Math.abs(joyY) > 0.1
+  ) {
 
     player.rotation.y =
       Math.atan2(
@@ -547,248 +744,376 @@ function updatePlayer(){
       );
 
   }
+
 }
 
 
+// ===============================
 // ENEMY AI
+// ===============================
 
-function updateEnemies(){
+function updateEnemies() {
 
-  if(!playing)return;
+  if (!playing)
+    return;
 
-  enemies.forEach(e=>{
 
-    if(!e.visible)return;
+  enemies.forEach(function(enemy) {
+
+    if (!enemy.visible)
+      return;
+
 
     const dx =
-      player.position.x-
-      e.position.x;
+      player.position.x -
+      enemy.position.x;
+
 
     const dz =
-      player.position.z-
-      e.position.z;
+      player.position.z -
+      enemy.position.z;
 
-    const dist =
-      Math.sqrt(dx*dx+dz*dz);
 
-    if(dist<32){
+    const distance =
+      Math.sqrt(
+        dx * dx +
+        dz * dz
+      );
+
+
+    if (distance < 35) {
 
       const angle =
-        Math.atan2(dx,dz);
+        Math.atan2(
+          dx,
+          dz
+        );
 
-      e.rotation.y=angle;
 
-      e.position.x +=
-        Math.sin(angle)*
-        e.speed;
+      enemy.rotation.y =
+        angle;
 
-      e.position.z +=
-        Math.cos(angle)*
-        e.speed;
+
+      enemy.position.x +=
+        Math.sin(angle) *
+        enemy.speed;
+
+
+      enemy.position.z +=
+        Math.cos(angle) *
+        enemy.speed;
 
     }
 
-    if(dist<2.2){
 
-      damage(.15);
+    if (distance < 2.5) {
+
+      damage(0.15);
 
     }
 
   });
+
 }
 
 
+// ===============================
 // DAMAGE
+// ===============================
 
-function damage(amount){
+function damage(amount) {
 
-  hp-=amount;
+  if (!playing)
+    return;
 
-  hp=Math.max(0,hp);
 
-  hpEl.textContent=
+  hp -= amount;
+
+
+  if (hp < 0)
+    hp = 0;
+
+
+  hpEl.textContent =
     Math.ceil(hp);
 
-  if(hp<=0)
+
+  if (hp <= 0) {
+
     lose();
+
+  }
+
 }
 
 
+// ===============================
 // ZONE
+// ===============================
 
-function updateZone(){
+function updateZone() {
 
-  if(!playing)return;
+  if (!playing)
+    return;
 
-  if(zoneRadius>12){
 
-    zoneRadius-=.004;
+  if (zoneRadius > 12) {
+
+    zoneRadius -= 0.004;
+
 
     zone.scale.set(
-      zoneRadius/55,
-      zoneRadius/55,
+      zoneRadius / 60,
+      zoneRadius / 60,
       1
     );
 
   }
 
-  const dist =
+
+  const distance =
     Math.sqrt(
-      player.position.x**2+
-      player.position.z**2
+      player.position.x *
+      player.position.x +
+
+      player.position.z *
+      player.position.z
     );
+
 
   const percent =
     Math.round(
-      zoneRadius/55*100
+      zoneRadius / 60 * 100
     );
 
-  zoneEl.textContent=
-    "ZONE "+percent+"%";
 
-  if(dist>zoneRadius){
+  zoneEl.textContent =
+    "ZONE " + percent + "%";
 
-    damage(.08);
 
-    message.textContent=
+  if (
+    distance >
+    zoneRadius
+  ) {
+
+    damage(0.08);
+
+    messageEl.textContent =
       "⚠️ KELUAR ZONA!";
 
   }
+
 }
 
 
+// ===============================
 // CAMERA
+// ===============================
 
-function updateCamera(){
+function updateCamera() {
 
   const offset =
     new THREE.Vector3(
-      0,8,11
+      0,
+      7,
+      11
     );
 
+
   offset.applyAxisAngle(
-    new THREE.Vector3(0,1,0),
+    new THREE.Vector3(
+      0,
+      1,
+      0
+    ),
     player.rotation.y
   );
 
+
   const target =
-    player.position.clone()
+    player.position
+      .clone()
       .add(offset);
+
 
   camera.position.lerp(
     target,
-    .12
+    0.12
   );
+
 
   camera.lookAt(
     player.position.x,
-    1.3,
+    1.4,
     player.position.z
   );
+
 }
 
 
-// START
+// ===============================
+// PLAY
+// ===============================
 
-document
-  .getElementById("play")
-  .onclick=()=>{
+const playButton =
+  document.getElementById("play");
 
-    document
-      .getElementById("start")
-      .style.display="none";
-
-    playing=true;
-
-    message.textContent=
-      "SURVIVE! 🔥";
-
-    setTimeout(()=>{
-      message.textContent="";
-    },1000);
-
-  };
+const startScreen =
+  document.getElementById("start");
 
 
-// LOSE
+function startGame(e) {
 
-function lose(){
+  if (e) {
 
-  playing=false;
+    e.preventDefault();
+    e.stopPropagation();
+
+  }
+
+
+  startScreen.style.display =
+    "none";
+
+
+  playing = true;
+
+
+  messageEl.textContent =
+    "SURVIVE! 🔥";
+
+
+  setTimeout(function() {
+
+    messageEl.textContent = "";
+
+  }, 1000);
+
+}
+
+
+playButton.addEventListener(
+  "click",
+  startGame
+);
+
+
+playButton.addEventListener(
+  "touchstart",
+  startGame,
+  {
+    passive: false
+  }
+);
+
+
+// ===============================
+// GAME OVER
+// ===============================
+
+function lose() {
+
+  playing = false;
+
 
   document
     .getElementById("finalKills")
-    .textContent=kills;
+    .textContent = kills;
+
 
   document
     .getElementById("result")
-    .textContent=
+    .textContent =
       "GAME OVER 💀";
 
+
   document
     .getElementById("gameover")
-    .style.display="flex";
+    .style.display =
+      "flex";
+
 }
 
 
+// ===============================
 // WIN
+// ===============================
 
-function win(){
+function win() {
 
-  playing=false;
+  playing = false;
+
 
   document
     .getElementById("finalKills")
-    .textContent=kills;
+    .textContent = kills;
+
 
   document
     .getElementById("result")
-    .textContent=
+    .textContent =
       "BOOYAH! 🏆";
+
 
   document
     .getElementById("gameover")
-    .style.display="flex";
+    .style.display =
+      "flex";
+
 }
 
 
+// ===============================
 // RESIZE
+// ===============================
 
 window.addEventListener(
   "resize",
-  ()=>{
+  function() {
 
-    camera.aspect=
-      innerWidth/innerHeight;
+    camera.aspect =
+      window.innerWidth /
+      window.innerHeight;
+
 
     camera.updateProjectionMatrix();
 
+
     renderer.setSize(
-      innerWidth,
-      innerHeight
+      window.innerWidth,
+      window.innerHeight
     );
 
   }
 );
 
 
-// LOOP
+// ===============================
+// GAME LOOP
+// ===============================
 
-function animate(){
+function animate() {
 
   requestAnimationFrame(
     animate
   );
 
+
   updatePlayer();
+
   updateEnemies();
+
   updateZone();
+
   updateCamera();
+
 
   renderer.render(
     scene,
     camera
   );
+
 }
+
 
 animate();
