@@ -1,829 +1,794 @@
-const camera = document.getElementById("camera");
-const cameraPlaceholder = document.getElementById("cameraPlaceholder");
+const scene = new THREE.Scene();
 
-const photoResult = document.getElementById("photoResult");
-const photo1 = document.getElementById("photo1");
-const photo2 = document.getElementById("photo2");
-const photoEmpty = document.querySelectorAll(".photo-empty");
+scene.background = new THREE.Color(0x82c9e8);
+scene.fog = new THREE.Fog(0x82c9e8, 40, 130);
 
-const canvas = document.getElementById("canvas");
+const camera = new THREE.PerspectiveCamera(
+  65,
+  innerWidth / innerHeight,
+  0.1,
+  200
+);
 
-const cameraBtn = document.getElementById("cameraBtn");
-const galleryInput = document.getElementById("galleryInput");
-
-const captureBtn = document.getElementById("captureBtn");
-const stopBtn = document.getElementById("stopBtn");
-
-const cameraControls = document.getElementById("cameraControls");
-const resultControls = document.getElementById("resultControls");
-
-const downloadBtn = document.getElementById("downloadBtn");
-const againBtn = document.getElementById("againBtn");
-
-const counter = document.getElementById("counter");
-const countdown = document.getElementById("countdown");
-const status = document.getElementById("status");
-
-let stream = null;
-let photos = [];
-let photoNumber = 0;
-
-
-// =====================================
-// KAMERA
-// =====================================
-
-cameraBtn.addEventListener("click", async () => {
-
-  try {
-
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: "user"
-      },
-      audio: false
-    });
-
-    camera.srcObject = stream;
-
-    await camera.play();
-
-    camera.style.display = "block";
-    cameraPlaceholder.style.display = "none";
-
-    photoResult.style.display = "none";
-
-    cameraControls.classList.remove("hidden");
-    resultControls.classList.add("hidden");
-
-    status.textContent = "Kamera siap 📸";
-
-  } catch (error) {
-
-    console.error(error);
-
-    camera.style.display = "none";
-    cameraPlaceholder.style.display = "flex";
-
-    status.textContent =
-      "Kamera tidak bisa dibuka. Izinkan akses kamera.";
-
-  }
-
+const renderer = new THREE.WebGLRenderer({
+  antialias: false
 });
 
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(
+  Math.min(devicePixelRatio, 1.5)
+);
 
-// =====================================
-// AMBIL FOTO
-// =====================================
+document
+  .getElementById("game")
+  .appendChild(renderer.domElement);
 
-captureBtn.addEventListener("click", async () => {
 
-  if (!stream) return;
+// LIGHT
 
-  if (photoNumber >= 2) return;
+scene.add(
+  new THREE.HemisphereLight(
+    0xffffff,
+    0x456040,
+    2
+  )
+);
 
-  await countdownAnimation();
+const sun = new THREE.DirectionalLight(
+  0xffffff,
+  2
+);
 
-  if (
-    camera.videoWidth === 0 ||
-    camera.videoHeight === 0
-  ) {
+sun.position.set(30,50,20);
 
-    status.textContent = "Kamera belum siap.";
-    return;
+scene.add(sun);
 
-  }
 
-  canvas.width = camera.videoWidth;
-  canvas.height = camera.videoHeight;
+// GROUND
 
-  const ctx = canvas.getContext("2d");
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(120,120),
+  new THREE.MeshLambertMaterial({
+    color: 0x4d984d
+  })
+);
 
-  ctx.save();
+ground.rotation.x = -Math.PI / 2;
 
-  ctx.translate(canvas.width, 0);
-  ctx.scale(-1, 1);
+scene.add(ground);
 
-  ctx.drawImage(
-    camera,
-    0,
-    0,
-    canvas.width,
-    canvas.height
+
+// ROAD
+
+const road = new THREE.Mesh(
+  new THREE.PlaneGeometry(12,120),
+  new THREE.MeshLambertMaterial({
+    color: 0x555555
+  })
+);
+
+road.rotation.x = -Math.PI / 2;
+road.position.y = .01;
+
+scene.add(road);
+
+const road2 = new THREE.Mesh(
+  new THREE.PlaneGeometry(120,10),
+  new THREE.MeshLambertMaterial({
+    color: 0x555555
+  })
+);
+
+road2.rotation.x = -Math.PI / 2;
+road2.position.y = .02;
+
+scene.add(road2);
+
+
+// BUILDINGS
+
+function building(x,z) {
+
+  const w = 5 + Math.random()*5;
+  const d = 5 + Math.random()*5;
+  const h = 4 + Math.random()*6;
+
+  const b = new THREE.Mesh(
+    new THREE.BoxGeometry(w,h,d),
+    new THREE.MeshLambertMaterial({
+      color:
+        Math.random() > .5
+        ? 0xb9a38d
+        : 0x8b969f
+    })
   );
 
-  ctx.restore();
+  b.position.set(x,h/2,z);
 
-  const image =
-    canvas.toDataURL("image/jpeg", 0.92);
+  scene.add(b);
+}
 
-  photos[photoNumber] = image;
+for(let i=0;i<20;i++){
 
-  showPhoto(photoNumber, image);
+  const x =
+    (Math.random()-.5)*95;
 
-  photoNumber++;
+  const z =
+    (Math.random()-.5)*95;
 
-  if (photoNumber === 1) {
+  if(Math.abs(x)<10 || Math.abs(z)<8)
+    continue;
 
-    counter.textContent = "Foto 2 dari 2";
-
-    status.textContent =
-      "Foto pertama berhasil! Ambil foto kedua 📸";
-
-  } else {
-
-    counter.textContent =
-      "2 foto selesai ✨";
-
-    status.textContent =
-      "Selesai! Dua foto berhasil dibuat 🎉";
-
-    stopCamera();
-
-    cameraControls.classList.add("hidden");
-
-    resultControls.classList.remove("hidden");
-
-  }
-
-});
-
-
-// =====================================
-// TAMPILKAN FOTO
-// =====================================
-
-function showPhoto(index, image) {
-
-  photoResult.style.display = "grid";
-
-  if (index === 0) {
-
-    photo1.src = image;
-    photo1.style.display = "block";
-    photoEmpty[0].style.display = "none";
-
-  }
-
-  if (index === 1) {
-
-    photo2.src = image;
-    photo2.style.display = "block";
-    photoEmpty[1].style.display = "none";
-
-  }
-
+  building(x,z);
 }
 
 
-// =====================================
-// COUNTDOWN
-// =====================================
+// TREES
 
-function countdownAnimation() {
+function tree(x,z){
 
-  return new Promise(resolve => {
+  const trunk = new THREE.Mesh(
+    new THREE.CylinderGeometry(
+      .25,.35,2,7
+    ),
+    new THREE.MeshLambertMaterial({
+      color:0x70452b
+    })
+  );
 
-    let number = 3;
+  trunk.position.set(x,1,z);
 
-    countdown.textContent = number;
+  scene.add(trunk);
 
-    const timer = setInterval(() => {
+  const leaves = new THREE.Mesh(
+    new THREE.SphereGeometry(2,7,7),
+    new THREE.MeshLambertMaterial({
+      color:0x247a38
+    })
+  );
 
-      number--;
+  leaves.position.set(x,3,z);
 
-      if (number > 0) {
+  scene.add(leaves);
+}
 
-        countdown.textContent = number;
+for(let i=0;i<35;i++){
 
-      } else {
-
-        countdown.textContent = "📸";
-
-        clearInterval(timer);
-
-        setTimeout(() => {
-
-          countdown.textContent = "";
-
-          resolve();
-
-        }, 350);
-
-      }
-
-    }, 700);
-
-  });
-
+  tree(
+    (Math.random()-.5)*105,
+    (Math.random()-.5)*105
+  );
 }
 
 
-// =====================================
-// GALERI
-// =====================================
+// PLAYER
 
-galleryInput.addEventListener("change", event => {
+const player = new THREE.Group();
 
-  const files =
-    Array.from(event.target.files)
-      .filter(file =>
-        file.type.startsWith("image/")
-      )
-      .slice(0, 2);
+const body = new THREE.Mesh(
+  new THREE.BoxGeometry(1.2,1.7,.8),
+  new THREE.MeshLambertMaterial({
+    color:0x2477e8
+  })
+);
 
-  if (files.length === 0) {
+body.position.y=1.5;
 
-    status.textContent =
-      "Pilih gambar terlebih dahulu.";
-
-    return;
-
-  }
-
-  stopCamera();
-
-  photos = [];
-  photoNumber = files.length;
-
-  files.forEach((file, index) => {
-
-    const reader = new FileReader();
-
-    reader.onload = e => {
-
-      const image = e.target.result;
-
-      photos[index] = image;
-
-      showPhoto(index, image);
-
-      if (
-        photos.filter(Boolean).length === files.length
-      ) {
-
-        cameraPlaceholder.style.display = "none";
-        camera.style.display = "none";
-
-        cameraControls.classList.add("hidden");
-        resultControls.classList.remove("hidden");
-
-        counter.textContent =
-          files.length === 2
-            ? "2 foto dipilih ✨"
-            : "1 foto dipilih";
-
-        status.textContent =
-          "Foto dari galeri berhasil dipilih 🖼️";
-
-      }
-
-    };
-
-    reader.readAsDataURL(file);
-
-  });
-
-});
+player.add(body);
 
 
-// =====================================
-// TUTUP KAMERA
-// =====================================
+const head = new THREE.Mesh(
+  new THREE.SphereGeometry(.48,10,8),
+  new THREE.MeshLambertMaterial({
+    color:0xffbd91
+  })
+);
 
-stopBtn.addEventListener("click", () => {
+head.position.y=2.65;
 
-  stopCamera();
-
-  cameraControls.classList.add("hidden");
-
-  camera.style.display = "none";
-
-  if (photos.length === 0) {
-    cameraPlaceholder.style.display = "flex";
-  }
-
-});
+player.add(head);
 
 
-function stopCamera() {
+const gun = new THREE.Mesh(
+  new THREE.BoxGeometry(.2,.2,1.5),
+  new THREE.MeshLambertMaterial({
+    color:0x202020
+  })
+);
 
-  if (stream) {
+gun.position.set(.65,1.5,-.7);
 
-    stream.getTracks().forEach(track => {
-      track.stop();
-    });
+player.add(gun);
 
-    stream = null;
+player.position.set(0,0,15);
 
-  }
+scene.add(player);
 
-  camera.srcObject = null;
 
+// ENEMIES
+
+const enemies=[];
+
+function enemy(){
+
+  const e = new THREE.Group();
+
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(1.2,1.7,.8),
+    new THREE.MeshLambertMaterial({
+      color:0xd93636
+    })
+  );
+
+  body.position.y=1.5;
+
+  e.add(body);
+
+
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(.48,10,8),
+    new THREE.MeshLambertMaterial({
+      color:0xffb48b
+    })
+  );
+
+  head.position.y=2.65;
+
+  e.add(head);
+
+
+  do {
+
+    e.position.set(
+      (Math.random()-.5)*85,
+      0,
+      (Math.random()-.5)*85
+    );
+
+  } while(
+    e.position.distanceTo(player.position)<18
+  );
+
+
+  e.hp=3;
+
+  e.speed=.012+
+    Math.random()*.012;
+
+  scene.add(e);
+
+  enemies.push(e);
 }
 
+for(let i=0;i<10;i++)
+  enemy();
 
-// =====================================
-// ULANGI
-// =====================================
 
-againBtn.addEventListener("click", () => {
+// ZONE
 
-  stopCamera();
+let zoneRadius=55;
 
-  photos = [];
-  photoNumber = 0;
+const zone = new THREE.Mesh(
+  new THREE.RingGeometry(
+    54.5,
+    55,
+    80
+  ),
+  new THREE.MeshBasicMaterial({
+    color:0x26a9ff,
+    transparent:true,
+    opacity:.8,
+    side:THREE.DoubleSide
+  })
+);
 
-  photo1.src = "";
-  photo2.src = "";
+zone.rotation.x=-Math.PI/2;
+zone.position.y=.05;
 
-  photo1.style.display = "none";
-  photo2.style.display = "none";
+scene.add(zone);
 
-  photoEmpty[0].style.display = "flex";
-  photoEmpty[1].style.display = "flex";
 
-  photoResult.style.display = "none";
+// GAME
 
-  camera.style.display = "none";
+let hp=100;
+let kills=0;
+let playing=false;
+let sprint=false;
 
-  cameraPlaceholder.style.display = "flex";
+const hpEl =
+  document.getElementById("hp");
 
-  cameraControls.classList.add("hidden");
-  resultControls.classList.add("hidden");
+const killEl =
+  document.getElementById("kills");
 
-  galleryInput.value = "";
+const zoneEl =
+  document.getElementById("zone");
 
-  counter.textContent = "Foto 1 dari 2";
+const message =
+  document.getElementById("message");
 
-  status.textContent = "";
 
-});
+// JOYSTICK
 
+const joystick =
+  document.getElementById("joystick");
 
-// =====================================
-// SIMPAN HASIL DENGAN BANYAK DEKORASI
-// =====================================
+const stick =
+  document.getElementById("stick");
 
-downloadBtn.addEventListener("click", async () => {
+let joyX=0;
+let joyY=0;
+let active=false;
 
-  const validPhotos = photos.filter(Boolean);
+function moveStick(x,y){
 
-  if (validPhotos.length === 0) return;
+  const r =
+    joystick.getBoundingClientRect();
 
-  const output = document.createElement("canvas");
+  const cx =
+    r.left+r.width/2;
 
-  const ctx = output.getContext("2d");
+  const cy =
+    r.top+r.height/2;
 
-  const width = 1200;
-  const height = 950;
+  let dx=x-cx;
+  let dy=y-cy;
 
-  output.width = width;
-  output.height = height;
+  const max=r.width/2-25;
 
+  const dist=
+    Math.sqrt(dx*dx+dy*dy);
 
-  // =================================
-  // BACKGROUND GRADIENT
-  // =================================
+  if(dist>max){
 
-  const gradient = ctx.createLinearGradient(
-    0,
-    0,
-    width,
-    height
-  );
+    dx=dx/dist*max;
+    dy=dy/dist*max;
 
-  gradient.addColorStop(0, "#ffd9ec");
-  gradient.addColorStop(0.35, "#e6ddff");
-  gradient.addColorStop(0.7, "#d9f4ff");
-  gradient.addColorStop(1, "#d8ffe9");
+  }
 
-  ctx.fillStyle = gradient;
+  stick.style.transform =
+    `translate(${dx}px,${dy}px)`;
 
-  ctx.fillRect(
-    0,
-    0,
-    width,
-    height
-  );
+  joyX=dx/max;
+  joyY=dy/max;
+}
 
+joystick.addEventListener(
+  "touchstart",
+  e=>{
+    active=true;
 
-  // =================================
-  // BUBBLE BACKGROUND
-  // =================================
+    const t=e.touches[0];
 
-  drawBubble(ctx, 80, 170, 75);
-  drawBubble(ctx, 1120, 190, 90);
-  drawBubble(ctx, 100, 680, 95);
-  drawBubble(ctx, 1100, 700, 80);
-
-  drawBubble(ctx, 250, 90, 35);
-  drawBubble(ctx, 950, 80, 45);
-  drawBubble(ctx, 40, 470, 40);
-  drawBubble(ctx, 1160, 470, 45);
-
-
-  // =================================
-  // SPARKLES
-  // =================================
-
-  drawSparkle(ctx, 70, 90, 30);
-  drawSparkle(ctx, 1130, 100, 35);
-
-  drawSparkle(ctx, 70, 850, 35);
-  drawSparkle(ctx, 1130, 850, 30);
-
-  drawSparkle(ctx, 270, 160, 18);
-  drawSparkle(ctx, 930, 160, 18);
-
-  drawSparkle(ctx, 300, 820, 20);
-  drawSparkle(ctx, 900, 820, 20);
-
-
-  // =================================
-  // BINTANG KECIL
-  // =================================
-
-  const stars = [
-    [140, 130],
-    [210, 220],
-    [1020, 240],
-    [1070, 330],
-    [130, 400],
-    [1080, 510],
-    [170, 760],
-    [1030, 780],
-    [330, 100],
-    [870, 105]
-  ];
-
-  ctx.fillStyle = "#ffffffaa";
-
-  ctx.font = "25px Arial";
-
-  stars.forEach(([x, y]) => {
-    ctx.fillText("✦", x, y);
-  });
-
-
-  // =================================
-  // HATI
-  // =================================
-
-  ctx.font = "32px Arial";
-
-  ctx.fillStyle = "#ff6fae";
-
-  ctx.fillText("♡", 120, 260);
-  ctx.fillText("♡", 1060, 290);
-  ctx.fillText("♡", 115, 600);
-  ctx.fillText("♡", 1060, 620);
-
-
-  // =================================
-  // BUNGA
-  // =================================
-
-  ctx.font = "35px Arial";
-
-  ctx.fillStyle = "#ffffff";
-
-  ctx.fillText("✿", 175, 340);
-  ctx.fillText("✿", 1020, 370);
-  ctx.fillText("❀", 160, 710);
-  ctx.fillText("❀", 1040, 750);
-
-
-  // =================================
-  // JUDUL
-  // =================================
-
-  ctx.textAlign = "center";
-
-  ctx.fillStyle = "#4d3b68";
-
-  ctx.font = "bold 44px Arial";
-
-  ctx.fillText(
-    "PHOTOBOOTH",
-    width / 2,
-    65
-  );
-
-  ctx.font = "20px Arial";
-
-  ctx.fillStyle = "#735f87";
-
-  ctx.fillText(
-    "✦ little moments, big memories ✦",
-    width / 2,
-    95
-  );
-
-
-  // =================================
-  // LOAD FOTO
-  // =================================
-
-  const images =
-    await Promise.all(
-      validPhotos.map(src => loadImage(src))
+    moveStick(
+      t.clientX,
+      t.clientY
     );
+  },
+  {passive:false}
+);
 
+joystick.addEventListener(
+  "touchmove",
+  e=>{
+    if(!active)return;
 
-  // =================================
-  // UKURAN FOTO
-  // =================================
+    const t=e.touches[0];
 
-  const photoWidth =
-    images.length === 2
-      ? 500
-      : 1000;
-
-  const photoHeight =
-    680;
-
-  const gap = 35;
-
-  const totalWidth =
-    images.length === 2
-      ? photoWidth * 2 + gap
-      : photoWidth;
-
-  const startX =
-    (width - totalWidth) / 2;
-
-
-  // =================================
-  // FOTO
-  // =================================
-
-  images.forEach((img, index) => {
-
-    const x =
-      startX +
-      index *
-      (photoWidth + gap);
-
-    const y = 125;
-
-
-    // SHADOW
-
-    ctx.save();
-
-    ctx.shadowColor =
-      "rgba(80,50,100,.3)";
-
-    ctx.shadowBlur = 25;
-
-    ctx.shadowOffsetY = 10;
-
-    ctx.fillStyle = "white";
-
-    ctx.fillRect(
-      x - 12,
-      y - 12,
-      photoWidth + 24,
-      photoHeight + 24
+    moveStick(
+      t.clientX,
+      t.clientY
     );
+  },
+  {passive:false}
+);
 
-    ctx.restore();
+joystick.addEventListener(
+  "touchend",
+  ()=>{
+    active=false;
+
+    joyX=0;
+    joyY=0;
+
+    stick.style.transform=
+      "translate(0,0)";
+  }
+);
 
 
-    // FRAME
+// SPRINT
 
-    ctx.fillStyle = "white";
+const sprintBtn =
+  document.getElementById("sprint");
 
-    ctx.fillRect(
-      x - 8,
-      y - 8,
-      photoWidth + 16,
-      photoHeight + 16
-    );
+sprintBtn.addEventListener(
+  "touchstart",
+  e=>{
+    e.preventDefault();
+    sprint=true;
+  }
+);
+
+sprintBtn.addEventListener(
+  "touchend",
+  ()=>{
+    sprint=false;
+  }
+);
 
 
-    // FOTO
+// SHOOT
 
-    ctx.save();
+const shootBtn =
+  document.getElementById("shoot");
 
-    ctx.beginPath();
+shootBtn.addEventListener(
+  "touchstart",
+  e=>{
+    e.preventDefault();
+    shoot();
+  }
+);
 
-    ctx.rect(
-      x,
-      y,
-      photoWidth,
-      photoHeight
-    );
+shootBtn.addEventListener(
+  "click",
+  shoot
+);
 
-    ctx.clip();
+function shoot(){
 
-    const scale =
-      Math.max(
-        photoWidth / img.width,
-        photoHeight / img.height
+  if(!playing)return;
+
+  let target=null;
+  let distance=Infinity;
+
+  enemies.forEach(e=>{
+
+    if(!e.visible)return;
+
+    const d =
+      e.position.distanceTo(
+        player.position
       );
 
-    const w =
-      img.width * scale;
+    if(d<distance){
 
-    const h =
-      img.height * scale;
+      distance=d;
+      target=e;
 
-    ctx.drawImage(
-      img,
-
-      x +
-      (photoWidth - w) / 2,
-
-      y +
-      (photoHeight - h) / 2,
-
-      w,
-      h
-    );
-
-    ctx.restore();
-
-
-    // NOMOR
-
-    ctx.fillStyle =
-      "rgba(255,255,255,.9)";
-
-    ctx.font =
-      "bold 18px Arial";
-
-    ctx.textAlign =
-      "center";
-
-    ctx.fillText(
-      index === 0 ? "01" : "02",
-      x + photoWidth / 2,
-      y + photoHeight + 42
-    );
+    }
 
   });
 
+  if(
+    target &&
+    distance<22
+  ){
 
-  // =================================
-  // FOOTER
-  // =================================
+    target.hp--;
 
-  ctx.textAlign = "center";
+    target.scale.set(
+      1.2,1.2,1.2
+    );
 
-  ctx.fillStyle = "#665274";
+    setTimeout(()=>{
+      if(target.visible)
+        target.scale.set(1,1,1);
+    },100);
 
-  ctx.font =
-    "bold 22px Arial";
+    if(target.hp<=0){
 
-  ctx.fillText(
-    "♡ memories to keep forever ♡",
-    width / 2,
-    height - 28
-  );
+      target.visible=false;
 
+      kills++;
 
-  // =================================
-  // DOWNLOAD
-  // =================================
+      killEl.textContent=kills;
 
-  const link =
-    document.createElement("a");
+      message.textContent=
+        "💥 ELIMINATED!";
 
-  link.download =
-    "photobooth-" +
-    Date.now() +
-    ".png";
+      setTimeout(()=>{
+        message.textContent="";
+      },700);
 
-  link.href =
-    output.toDataURL("image/png");
+      if(
+        enemies.every(
+          e=>!e.visible
+        )
+      ){
 
-  link.click();
+        win();
 
-  status.textContent =
-    "Hasil photobooth berhasil disimpan 💾✨";
+      }
 
-});
+    }
 
-
-// =====================================
-// BUBBLE
-// =====================================
-
-function drawBubble(ctx, x, y, radius) {
-
-  ctx.save();
-
-  ctx.fillStyle =
-    "rgba(255,255,255,.28)";
-
-  ctx.beginPath();
-
-  ctx.arc(
-    x,
-    y,
-    radius,
-    0,
-    Math.PI * 2
-  );
-
-  ctx.fill();
-
-  ctx.restore();
-
+  }
 }
 
 
-// =====================================
-// SPARKLE
-// =====================================
+// PLAYER MOVEMENT
 
-function drawSparkle(ctx, x, y, size) {
+function updatePlayer(){
 
-  ctx.save();
+  if(!playing)return;
 
-  ctx.translate(x, y);
+  const speed =
+    sprint ? .32 : .18;
 
-  ctx.fillStyle =
-    "rgba(255,255,255,.8)";
+  player.position.x +=
+    joyX*speed;
 
-  ctx.beginPath();
+  player.position.z +=
+    joyY*speed;
 
-  ctx.moveTo(
-    0,
-    -size
-  );
+  player.position.x =
+    THREE.MathUtils.clamp(
+      player.position.x,
+      -57,57
+    );
 
-  ctx.lineTo(
-    size * .25,
-    -size * .25
-  );
+  player.position.z =
+    THREE.MathUtils.clamp(
+      player.position.z,
+      -57,57
+    );
 
-  ctx.lineTo(
-    size,
-    0
-  );
+  if(
+    Math.abs(joyX)>.1 ||
+    Math.abs(joyY)>.1
+  ){
 
-  ctx.lineTo(
-    size * .25,
-    size * .25
-  );
+    player.rotation.y =
+      Math.atan2(
+        joyX,
+        joyY
+      );
 
-  ctx.lineTo(
-    0,
-    size
-  );
-
-  ctx.lineTo(
-    -size * .25,
-    size * .25
-  );
-
-  ctx.lineTo(
-    -size,
-    0
-  );
-
-  ctx.lineTo(
-    -size * .25,
-    -size * .25
-  );
-
-  ctx.closePath();
-
-  ctx.fill();
-
-  ctx.restore();
-
+  }
 }
 
 
-// =====================================
-// LOAD IMAGE
-// =====================================
+// ENEMY AI
 
-function loadImage(src) {
+function updateEnemies(){
 
-  return new Promise(resolve => {
+  if(!playing)return;
 
-    const img = new Image();
+  enemies.forEach(e=>{
 
-    img.onload = () => resolve(img);
+    if(!e.visible)return;
 
-    img.src = src;
+    const dx =
+      player.position.x-
+      e.position.x;
+
+    const dz =
+      player.position.z-
+      e.position.z;
+
+    const dist =
+      Math.sqrt(dx*dx+dz*dz);
+
+    if(dist<32){
+
+      const angle =
+        Math.atan2(dx,dz);
+
+      e.rotation.y=angle;
+
+      e.position.x +=
+        Math.sin(angle)*
+        e.speed;
+
+      e.position.z +=
+        Math.cos(angle)*
+        e.speed;
+
+    }
+
+    if(dist<2.2){
+
+      damage(.15);
+
+    }
 
   });
-
 }
 
 
-// =====================================
-// CLEANUP
-// =====================================
+// DAMAGE
+
+function damage(amount){
+
+  hp-=amount;
+
+  hp=Math.max(0,hp);
+
+  hpEl.textContent=
+    Math.ceil(hp);
+
+  if(hp<=0)
+    lose();
+}
+
+
+// ZONE
+
+function updateZone(){
+
+  if(!playing)return;
+
+  if(zoneRadius>12){
+
+    zoneRadius-=.004;
+
+    zone.scale.set(
+      zoneRadius/55,
+      zoneRadius/55,
+      1
+    );
+
+  }
+
+  const dist =
+    Math.sqrt(
+      player.position.x**2+
+      player.position.z**2
+    );
+
+  const percent =
+    Math.round(
+      zoneRadius/55*100
+    );
+
+  zoneEl.textContent=
+    "ZONE "+percent+"%";
+
+  if(dist>zoneRadius){
+
+    damage(.08);
+
+    message.textContent=
+      "⚠️ KELUAR ZONA!";
+
+  }
+}
+
+
+// CAMERA
+
+function updateCamera(){
+
+  const offset =
+    new THREE.Vector3(
+      0,8,11
+    );
+
+  offset.applyAxisAngle(
+    new THREE.Vector3(0,1,0),
+    player.rotation.y
+  );
+
+  const target =
+    player.position.clone()
+      .add(offset);
+
+  camera.position.lerp(
+    target,
+    .12
+  );
+
+  camera.lookAt(
+    player.position.x,
+    1.3,
+    player.position.z
+  );
+}
+
+
+// START
+
+document
+  .getElementById("play")
+  .onclick=()=>{
+
+    document
+      .getElementById("start")
+      .style.display="none";
+
+    playing=true;
+
+    message.textContent=
+      "SURVIVE! 🔥";
+
+    setTimeout(()=>{
+      message.textContent="";
+    },1000);
+
+  };
+
+
+// LOSE
+
+function lose(){
+
+  playing=false;
+
+  document
+    .getElementById("finalKills")
+    .textContent=kills;
+
+  document
+    .getElementById("result")
+    .textContent=
+      "GAME OVER 💀";
+
+  document
+    .getElementById("gameover")
+    .style.display="flex";
+}
+
+
+// WIN
+
+function win(){
+
+  playing=false;
+
+  document
+    .getElementById("finalKills")
+    .textContent=kills;
+
+  document
+    .getElementById("result")
+    .textContent=
+      "BOOYAH! 🏆";
+
+  document
+    .getElementById("gameover")
+    .style.display="flex";
+}
+
+
+// RESIZE
 
 window.addEventListener(
-  "beforeunload",
-  stopCamera
+  "resize",
+  ()=>{
+
+    camera.aspect=
+      innerWidth/innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+      innerWidth,
+      innerHeight
+    );
+
+  }
 );
+
+
+// LOOP
+
+function animate(){
+
+  requestAnimationFrame(
+    animate
+  );
+
+  updatePlayer();
+  updateEnemies();
+  updateZone();
+  updateCamera();
+
+  renderer.render(
+    scene,
+    camera
+  );
+}
+
+animate();
