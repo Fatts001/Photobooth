@@ -6,93 +6,275 @@
 
 body {
   min-height: 100vh;
+  overflow-x: hidden;
+
   font-family: Arial, sans-serif;
-  background:
-    radial-gradient(circle at top, #6d4aff 0%, transparent 40%),
-    linear-gradient(135deg, #11111f, #241b3d 55%, #101d2b);
   color: white;
+
+  background:
+    radial-gradient(circle at 20% 10%, #ff8fcf55, transparent 25%),
+    radial-gradient(circle at 80% 20%, #8c7aff55, transparent 25%),
+    radial-gradient(circle at 50% 100%, #5ed6d655, transparent 30%),
+    linear-gradient(135deg, #17152d, #39235b, #152c45);
+
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 20px;
+  padding: 30px 16px;
 }
+
+/* DECORATION */
+
+.decor {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+
+  font-size: 40px;
+  opacity: .45;
+
+  animation: float 5s ease-in-out infinite;
+}
+
+.decor1 {
+  top: 8%;
+  left: 6%;
+}
+
+.decor2 {
+  top: 25%;
+  right: 7%;
+  font-size: 50px;
+}
+
+.decor3 {
+  bottom: 15%;
+  left: 8%;
+  font-size: 45px;
+}
+
+.decor4 {
+  bottom: 8%;
+  right: 12%;
+}
+
+.decor5 {
+  top: 55%;
+  left: 3%;
+  font-size: 30px;
+}
+
+@keyframes float {
+  0%,100% {
+    transform: translateY(0) rotate(0);
+  }
+
+  50% {
+    transform: translateY(-15px) rotate(8deg);
+  }
+}
+
+/* APP */
 
 .app {
   width: 100%;
-  max-width: 520px;
+  max-width: 600px;
   text-align: center;
+  position: relative;
+  z-index: 2;
 }
 
-h1 {
-  font-size: clamp(32px, 9vw, 48px);
-  margin-bottom: 8px;
-}
+/* TITLE */
 
-.app > p {
-  color: #cfcde0;
+.title {
   margin-bottom: 25px;
 }
 
-/* PREVIEW */
+.mini {
+  font-size: 12px;
+  letter-spacing: 3px;
+  opacity: .75;
+  margin-bottom: 10px;
+}
 
-.preview {
+h1 {
+  font-size: clamp(30px, 8vw, 46px);
+  margin-bottom: 8px;
+}
+
+.title p {
+  color: #ddd7ea;
+}
+
+/* BOOTH */
+
+.booth {
   position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  background: #07070c;
-  border-radius: 25px;
-  overflow: hidden;
+
+  padding: 18px;
+
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.20),
+      rgba(255,255,255,.06)
+    );
+
   border: 1px solid rgba(255,255,255,.2);
-  box-shadow: 0 20px 60px rgba(0,0,0,.45);
-  margin-bottom: 22px;
+
+  backdrop-filter: blur(18px);
+
+  box-shadow:
+    0 25px 70px rgba(0,0,0,.4),
+    inset 0 1px rgba(255,255,255,.2);
 }
 
-video,
-#photoPreview {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* TWO PHOTOS */
+
+.photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
-#empty {
+.photo-frame {
+  position: relative;
+
+  aspect-ratio: 3 / 4;
+
+  overflow: hidden;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(145deg, #29263b, #151522);
+
+  border: 5px solid rgba(255,255,255,.9);
+
+  box-shadow:
+    0 10px 25px rgba(0,0,0,.3);
+}
+
+.photo-frame img {
   position: absolute;
   inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  display: none;
+}
+
+.empty-photo {
+  position: absolute;
+  inset: 0;
+
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
+
+  font-size: 42px;
+  color: #777;
+}
+
+.number {
+  position: absolute;
+  z-index: 5;
+
+  top: 8px;
+  left: 8px;
+
+  padding: 5px 8px;
+
+  border-radius: 10px;
+
+  background: rgba(0,0,0,.5);
+
+  font-size: 11px;
+}
+
+/* CAMERA */
+
+#camera {
+  display: none;
+
+  width: 100%;
+
+  margin-top: 15px;
+
+  border-radius: 18px;
+
+  transform: scaleX(-1);
+}
+
+#canvas {
+  display: none;
+}
+
+#cameraPlaceholder {
+  margin-top: 15px;
+
+  padding: 18px;
+
+  border-radius: 18px;
+
+  background: rgba(0,0,0,.15);
+
   color: #aaa;
-  font-size: 55px;
 }
 
-#empty small {
+#cameraPlaceholder span {
+  font-size: 35px;
+}
+
+#cameraPlaceholder p {
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+/* COUNTER */
+
+.counter {
+  margin: 18px 0;
+
+  color: #eee;
+
   font-size: 14px;
-  margin-top: 8px;
+  font-weight: bold;
 }
 
-/* BUTTON AREA */
+/* BUTTONS */
 
 .buttons {
-  width: 100%;
   display: flex;
+
   justify-content: center;
   align-items: center;
+
   gap: 12px;
 }
 
 button,
 .galleryBtn {
-  border: none;
-  outline: none;
-  min-width: 155px;
+  min-width: 170px;
+
   padding: 14px 20px;
+
+  border: none;
   border-radius: 16px;
+
   color: white;
+
   font-size: 15px;
   font-weight: bold;
+
   cursor: pointer;
 
   background: rgba(255,255,255,.12);
+
   border: 1px solid rgba(255,255,255,.15);
 
   transition: .2s;
@@ -100,76 +282,90 @@ button,
 
 button:hover,
 .galleryBtn:hover {
-  transform: translateY(-2px);
-  background: rgba(255,255,255,.2);
+  transform: translateY(-3px);
+
+  background: rgba(255,255,255,.22);
 }
 
 #cameraBtn {
-  background: linear-gradient(135deg, #7657ff, #a15cff);
+  background: linear-gradient(135deg, #7c5cff, #c45cff);
 }
 
 .galleryBtn {
   display: flex;
+
   justify-content: center;
   align-items: center;
 }
 
-input[type="file"] {
+input {
   display: none;
 }
 
 /* CAMERA CONTROLS */
 
 #cameraControls {
-  margin-top: 22px;
+  margin-top: 20px;
+
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
+
   gap: 12px;
 }
 
 .capture {
-  min-width: 80px;
-  width: 80px;
-  height: 80px;
+  min-width: 85px;
+
+  width: 85px;
+  height: 85px;
+
   padding: 0;
 
   border-radius: 50%;
-  background: white;
-  color: #111;
 
-  font-size: 42px;
-  line-height: 1;
+  background: white;
+
+  color: #222;
+
+  font-size: 45px;
 }
 
-#stopBtn {
-  min-width: 150px;
+#countdown {
+  height: 35px;
+
+  font-size: 28px;
+
+  font-weight: bold;
 }
 
 /* RESULT */
 
 #resultControls {
   margin-top: 20px;
+
   display: flex;
+
   justify-content: center;
-  align-items: center;
+
   gap: 12px;
 }
 
 #downloadBtn {
-  background: linear-gradient(135deg, #00a86b, #00c982);
-}
-
-#againBtn {
-  background: rgba(255,255,255,.12);
+  background: linear-gradient(135deg, #00a86b, #00d492);
 }
 
 /* STATUS */
 
 #status {
   min-height: 22px;
+
   margin-top: 18px;
+
   color: #ddd;
+
   font-size: 14px;
 }
 
@@ -181,23 +377,19 @@ input[type="file"] {
 
 /* MOBILE */
 
-@media (max-width: 500px) {
+@media(max-width:500px) {
 
   body {
-    padding: 16px;
-    align-items: flex-start;
-    padding-top: 35px;
+    padding-top: 20px;
   }
 
   .buttons {
     flex-direction: column;
-    gap: 10px;
   }
 
   button,
   .galleryBtn {
     width: 100%;
-    min-width: 0;
   }
 
   #resultControls {
@@ -208,7 +400,15 @@ input[type="file"] {
     width: 100%;
   }
 
-  .preview {
-    border-radius: 20px;
+  .booth {
+    padding: 12px;
+  }
+
+  .photos {
+    gap: 8px;
+  }
+
+  .photo-frame {
+    border-width: 4px;
   }
 }
