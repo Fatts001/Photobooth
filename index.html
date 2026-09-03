@@ -4,16 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
   <title>Mini Battle Royale 3D</title>
+
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <div id="game"></div>
 
 <div id="hud">
+
   <div class="status">
     ❤️ <span id="hp">100</span>
-    <span class="kills">☠️ <span id="kills">0</span></span>
+    <span class="kills">
+      ☠️ <span id="kills">0</span>
+    </span>
   </div>
 
   <div id="zone">ZONE 100%</div>
@@ -27,25 +32,150 @@
   </div>
 
   <div class="buttons">
-    <button id="sprint">🏃</button>
-    <button id="shoot">🔫</button>
+    <button id="sprint" type="button">🏃</button>
+    <button id="shoot" type="button">🔫</button>
   </div>
+
 </div>
+
+
+<!-- START SCREEN -->
 
 <div id="start">
+
   <h1>MINI BATTLE ROYALE</h1>
+
   <p>3D Survival Game</p>
-  <button id="play">PLAY</button>
+
+  <button id="play" type="button">
+    PLAY
+  </button>
+
 </div>
+
+
+<!-- GAME OVER -->
 
 <div id="gameover">
+
   <h1 id="result">GAME OVER</h1>
-  <p>KILL: <span id="finalKills">0</span></p>
-  <button onclick="location.reload()">MAIN LAGI</button>
+
+  <p>
+    KILL:
+    <span id="finalKills">0</span>
+  </p>
+
+  <button
+    id="restart"
+    type="button"
+  >
+    MAIN LAGI
+  </button>
+
 </div>
 
+
 <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
+
 <script src="script.js"></script>
+
+
+<!-- FORCE PLAY BUTTON -->
+
+<script>
+
+const playButton =
+  document.getElementById("play");
+
+const startScreen =
+  document.getElementById("start");
+
+playButton.addEventListener(
+  "click",
+  function(e) {
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    startScreen.style.display = "none";
+
+    if (typeof playing !== "undefined") {
+      playing = true;
+    }
+
+    const msg =
+      document.getElementById("message");
+
+    if (msg) {
+
+      msg.textContent =
+        "SURVIVE! 🔥";
+
+      setTimeout(() => {
+        msg.textContent = "";
+      }, 1000);
+
+    }
+
+  },
+  true
+);
+
+
+/* ANDROID / TOUCH */
+
+playButton.addEventListener(
+  "touchstart",
+  function(e) {
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    startScreen.style.display = "none";
+
+    if (typeof playing !== "undefined") {
+      playing = true;
+    }
+
+    const msg =
+      document.getElementById("message");
+
+    if (msg) {
+
+      msg.textContent =
+        "SURVIVE! 🔥";
+
+      setTimeout(() => {
+        msg.textContent = "";
+      }, 1000);
+
+    }
+
+  },
+  {
+    passive: false,
+    capture: true
+  }
+);
+
+
+/* RESTART */
+
+const restart =
+  document.getElementById("restart");
+
+if (restart) {
+
+  restart.addEventListener(
+    "click",
+    () => {
+      location.reload();
+    }
+  );
+
+}
+
+</script>
 
 </body>
 </html>
