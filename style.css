@@ -192,3 +192,41 @@ canvas {
     bottom: 20px;
   }
 }
+#start {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 999999 !important;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+
+  pointer-events: auto !important;
+
+  touch-action: manipulation !important;
+}
+
+#start button {
+  position: relative !important;
+
+  z-index: 1000000 !important;
+
+  pointer-events: auto !important;
+
+  touch-action: manipulation !important;
+
+  cursor: pointer;
+
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#game {
+  z-index: 1 !important;
+}
+
+#hud {
+  z-index: 10 !important;
+}
