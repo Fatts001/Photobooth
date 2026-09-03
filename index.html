@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhotoBooth</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+  <h1>📸 PhotoBooth</h1>
+  <p>Pilih kamera atau foto dari galeri</p>
+
+  <div class="preview">
+    <video id="camera" autoplay playsinline></video>
+    <img id="photoPreview">
+    <div id="empty">📷<br><small>Belum ada foto</small></div>
+  </div>
+
+  <div class="buttons">
+    <button id="cameraBtn">📷 Buka Kamera</button>
+
+    <label for="galleryInput" class="galleryBtn">
+      🖼️ Pilih Galeri
+    </label>
+
+    <input
+      type="file"
+      id="galleryInput"
+      accept="image/*"
+    >
+  </div>
+
+  <div id="cameraControls" class="hidden">
+    <button id="captureBtn" class="capture">●</button>
+    <button id="stopBtn">✖ Tutup Kamera</button>
+  </div>
+
+  <div id="resultControls" class="hidden">
+    <button id="downloadBtn">💾 Simpan Foto</button>
+    <button id="againBtn">🔄 Foto Lagi</button>
+  </div>
+
+  <p id="status"></p>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script src="script.js"></script>
+</body>
+</html>
