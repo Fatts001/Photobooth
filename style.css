@@ -1,547 +1,187 @@
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
+html,
 body {
-  min-height: 100vh;
-  overflow-x: hidden;
-
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #111;
   font-family: Arial, sans-serif;
-  color: white;
-
-  background:
-    radial-gradient(circle at 15% 10%, #ff8fcf55, transparent 25%),
-    radial-gradient(circle at 85% 15%, #8d7aff55, transparent 25%),
-    radial-gradient(circle at 50% 100%, #55d7d755, transparent 30%),
-    linear-gradient(135deg, #17152d, #3a245d, #142c43);
-
-  display: flex;
-  justify-content: center;
-
-  padding: 25px 15px;
+  touch-action: none;
 }
 
-/* DEKORASI */
-
-.floating {
+#game {
   position: fixed;
-  z-index: 0;
+  inset: 0;
+}
 
+canvas {
+  display: block;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
   pointer-events: none;
-
-  opacity: .5;
-  font-size: 40px;
-
-  animation: floating 5s ease-in-out infinite;
-}
-
-.f1 {
-  top: 8%;
-  left: 6%;
-}
-
-.f2 {
-  top: 24%;
-  right: 7%;
-  font-size: 52px;
-}
-
-.f3 {
-  bottom: 14%;
-  left: 7%;
-  font-size: 45px;
-}
-
-.f4 {
-  bottom: 8%;
-  right: 12%;
-}
-
-.f5 {
-  top: 55%;
-  left: 3%;
-  font-size: 30px;
-}
-
-@keyframes floating {
-
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(-15px) rotate(8deg);
-  }
-
-}
-
-/* APP */
-
-.app {
-  position: relative;
-  z-index: 2;
-
-  width: 100%;
-  max-width: 620px;
-
-  text-align: center;
-}
-
-/* HEADER */
-
-.header {
-  margin-bottom: 25px;
-}
-
-.logo {
-  font-size: 12px;
-  font-weight: bold;
-  letter-spacing: 4px;
-
-  opacity: .75;
-
-  margin-bottom: 10px;
-}
-
-h1 {
-  font-size: clamp(32px, 8vw, 48px);
-  margin-bottom: 8px;
-}
-
-.header p {
-  color: #ddd8e8;
-  font-size: 15px;
-}
-
-/* BOOTH */
-
-.booth {
-
-  position: relative;
-
-  width: 100%;
-
-  padding: 18px;
-
-  border-radius: 30px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,.18),
-      rgba(255,255,255,.05)
-    );
-
-  border: 1px solid rgba(255,255,255,.2);
-
-  backdrop-filter: blur(18px);
-
-  box-shadow:
-    0 25px 70px rgba(0,0,0,.4),
-    inset 0 1px rgba(255,255,255,.2);
-}
-
-/* CAMERA */
-
-.camera-box {
-
-  position: relative;
-
-  width: 100%;
-
-  aspect-ratio: 4 / 3;
-
-  overflow: hidden;
-
-  border-radius: 22px;
-
-  background: #09090d;
-
-}
-
-#camera {
-
-  display: none;
-
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-
-  transform: scaleX(-1);
-
-}
-
-.camera-placeholder {
-
-  position: absolute;
-
-  inset: 0;
-
-  display: flex;
-
-  flex-direction: column;
-
-  justify-content: center;
-
-  align-items: center;
-
-  color: #999;
-
-  background:
-    radial-gradient(
-      circle,
-      rgba(255,255,255,.05),
-      transparent
-    );
-
-}
-
-.camera-placeholder div {
-
-  font-size: 55px;
-
-  margin-bottom: 8px;
-
-}
-
-.camera-placeholder span {
-
-  font-size: 14px;
-
-}
-
-/* 2 FOTO */
-
-.photo-result {
-
-  display: none;
-
-  grid-template-columns: 1fr 1fr;
-
-  gap: 12px;
-
-  width: 100%;
-
-}
-
-.photo-card {
-
-  position: relative;
-
-  aspect-ratio: 3 / 4;
-
-  overflow: hidden;
-
-  border-radius: 18px;
-
-  background:
-    linear-gradient(145deg, #29263b, #12121c);
-
-  border: 5px solid white;
-
-  box-shadow:
-    0 12px 30px rgba(0,0,0,.3);
-
-}
-
-.photo-card img {
-
-  display: none;
-
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-
-}
-
-.photo-empty {
-
-  position: absolute;
-
-  inset: 0;
-
-  display: flex;
-
-  justify-content: center;
-  align-items: center;
-
-  font-size: 40px;
-
-  color: #777;
-
-}
-
-.photo-number {
-
-  position: absolute;
-
-  z-index: 5;
-
-  top: 8px;
-  left: 8px;
-
-  padding: 5px 8px;
-
-  border-radius: 9px;
-
-  background: rgba(0,0,0,.55);
-
-  font-size: 11px;
-  font-weight: bold;
-
-}
-
-/* CANVAS */
-
-#canvas {
-  display: none;
-}
-
-/* COUNTER */
-
-.counter {
-
-  margin: 18px 0;
-
-  font-size: 14px;
-
-  color: #eee;
-
-  font-weight: bold;
-
-}
-
-/* BUTTONS */
-
-.main-buttons {
-
-  display: flex;
-
-  justify-content: center;
-
-  align-items: center;
-
-  gap: 12px;
-
-  width: 100%;
-
-}
-
-.btn,
-.close-camera {
-
-  min-width: 170px;
-
-  padding: 14px 20px;
-
-  border-radius: 16px;
-
-  border: 1px solid rgba(255,255,255,.15);
-
   color: white;
+}
 
-  font-size: 15px;
-
+.status {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  padding: 9px 13px;
+  background: rgba(0,0,0,.6);
+  border-radius: 12px;
   font-weight: bold;
-
-  cursor: pointer;
-
-  transition: .2s;
-
-  background: rgba(255,255,255,.12);
-
+  font-size: 18px;
 }
 
-.btn:hover,
-.close-camera:hover {
-
-  transform: translateY(-3px);
-
-  background: rgba(255,255,255,.22);
-
+.kills {
+  margin-left: 15px;
 }
 
-.camera-btn {
-
-  background:
-    linear-gradient(135deg, #7558ff, #bd5cff);
-
+#zone {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  padding: 9px 13px;
+  background: rgba(0,0,0,.6);
+  border-radius: 12px;
+  font-weight: bold;
 }
 
-.gallery-btn {
-
-  display: flex;
-
-  justify-content: center;
-
-  align-items: center;
-
-}
-
-#galleryInput {
-
-  display: none;
-
-}
-
-/* CAMERA CONTROLS */
-
-.camera-controls {
-
-  margin-top: 20px;
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  gap: 12px;
-
-}
-
-.capture-btn {
-
-  width: 82px;
-  height: 82px;
-
-  min-width: 82px;
-
-  padding: 0;
-
-  border-radius: 50%;
-
-  border: 7px solid rgba(255,255,255,.5);
-
-  background: white;
-
-  color: #222;
-
-  font-size: 43px;
-
-  line-height: 1;
-
-  cursor: pointer;
-
-}
-
-.close-camera {
-
-  min-width: 160px;
-
-}
-
-/* COUNTDOWN */
-
-#countdown {
-
-  height: 35px;
-
+#crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
   font-size: 30px;
-
   font-weight: bold;
-
+  text-shadow: 0 0 5px black;
 }
 
-/* RESULT */
+#message {
+  position: absolute;
+  top: 25%;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  text-shadow: 0 2px 7px black;
+}
 
-.result-controls {
+#joystick {
+  pointer-events: auto;
+  position: absolute;
+  left: 25px;
+  bottom: 30px;
+  width: 125px;
+  height: 125px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  border: 2px solid rgba(255,255,255,.3);
+}
 
-  margin-top: 20px;
+#stick {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  left: 35px;
+  top: 35px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.55);
+}
 
+.buttons {
+  position: absolute;
+  right: 25px;
+  bottom: 30px;
   display: flex;
+  gap: 15px;
+  pointer-events: auto;
+}
 
+.buttons button {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background: rgba(0,0,0,.55);
+  color: white;
+  font-size: 30px;
+}
+
+.buttons button:active {
+  transform: scale(.9);
+}
+
+#start,
+#gameover {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-
-  gap: 12px;
-
-}
-
-.save-btn {
-
+  align-items: center;
+  color: white;
+  text-align: center;
   background:
-    linear-gradient(135deg, #00a86b, #00d492);
-
+    radial-gradient(circle, #254b65, #05080b);
 }
 
-.again-btn {
-
-  background:
-    rgba(255,255,255,.12);
-
+#gameover {
+  display: none;
 }
 
-/* STATUS */
-
-#status {
-
-  min-height: 22px;
-
-  margin-top: 18px;
-
-  color: #ddd;
-
-  font-size: 14px;
-
+#start h1,
+#gameover h1 {
+  font-size: 36px;
+  text-shadow: 0 4px 10px black;
 }
 
-/* HIDDEN */
-
-.hidden {
-  display: none !important;
+#start p {
+  margin: 10px 0 25px;
+  opacity: .8;
 }
 
-/* MOBILE */
+#start button,
+#gameover button {
+  border: 0;
+  padding: 15px 50px;
+  border-radius: 12px;
+  background: #22c55e;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+}
 
-@media (max-width: 520px) {
-
-  body {
-    padding: 20px 12px;
+@media(max-width:600px) {
+  #start h1,
+  #gameover h1 {
+    font-size: 28px;
   }
 
-  .booth {
-    padding: 12px;
-    border-radius: 24px;
+  #joystick {
+    left: 18px;
+    bottom: 20px;
+    width: 110px;
+    height: 110px;
   }
 
-  .main-buttons {
-
-    flex-direction: column;
-
+  #stick {
+    left: 29px;
+    top: 29px;
   }
 
-  .btn {
-
-    width: 100%;
-
+  .buttons {
+    right: 18px;
+    bottom: 20px;
   }
-
-  .result-controls {
-
-    flex-direction: column;
-
-  }
-
-  .result-controls .btn {
-
-    width: 100%;
-
-  }
-
-  .photo-result {
-
-    gap: 8px;
-
-  }
-
-  .photo-card {
-
-    border-width: 4px;
-
-  }
-
 }
