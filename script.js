@@ -1,124 +1,72 @@
 const camera = document.getElementById("camera");
-const cameraBox = document.getElementById("cameraBox");
-const cameraPlaceholder =
-  document.getElementById("cameraPlaceholder");
+const cameraPlaceholder = document.getElementById("cameraPlaceholder");
 
-const photoResult =
-  document.getElementById("photoResult");
+const photoResult = document.getElementById("photoResult");
+const photo1 = document.getElementById("photo1");
+const photo2 = document.getElementById("photo2");
+const photoEmpty = document.querySelectorAll(".photo-empty");
 
-const photo1 =
-  document.getElementById("photo1");
+const canvas = document.getElementById("canvas");
 
-const photo2 =
-  document.getElementById("photo2");
+const cameraBtn = document.getElementById("cameraBtn");
+const galleryInput = document.getElementById("galleryInput");
 
-const photoEmpty =
-  document.querySelectorAll(".photo-empty");
+const captureBtn = document.getElementById("captureBtn");
+const stopBtn = document.getElementById("stopBtn");
 
-const canvas =
-  document.getElementById("canvas");
+const cameraControls = document.getElementById("cameraControls");
+const resultControls = document.getElementById("resultControls");
 
-const cameraBtn =
-  document.getElementById("cameraBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+const againBtn = document.getElementById("againBtn");
 
-const galleryInput =
-  document.getElementById("galleryInput");
-
-const captureBtn =
-  document.getElementById("captureBtn");
-
-const stopBtn =
-  document.getElementById("stopBtn");
-
-const cameraControls =
-  document.getElementById("cameraControls");
-
-const resultControls =
-  document.getElementById("resultControls");
-
-const downloadBtn =
-  document.getElementById("downloadBtn");
-
-const againBtn =
-  document.getElementById("againBtn");
-
-const counter =
-  document.getElementById("counter");
-
-const countdown =
-  document.getElementById("countdown");
-
-const status =
-  document.getElementById("status");
+const counter = document.getElementById("counter");
+const countdown = document.getElementById("countdown");
+const status = document.getElementById("status");
 
 let stream = null;
-
 let photos = [];
-
 let photoNumber = 0;
 
 
 // =====================================
-// BUKA KAMERA
+// KAMERA
 // =====================================
 
 cameraBtn.addEventListener("click", async () => {
 
   try {
 
-    if (!navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia) {
-
-      status.textContent =
-        "Browser tidak mendukung kamera.";
-
-      return;
-
-    }
-
-    stream =
-      await navigator.mediaDevices.getUserMedia({
-
-        video: {
-          facingMode: "user"
-        },
-
-        audio: false
-
-      });
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: "user"
+      },
+      audio: false
+    });
 
     camera.srcObject = stream;
 
     await camera.play();
 
-    // TAMPILKAN KAMERA
     camera.style.display = "block";
-
-    // HILANGKAN PLACEHOLDER
     cameraPlaceholder.style.display = "none";
 
-    // SEMBUNYIKAN HASIL FOTO
     photoResult.style.display = "none";
 
     cameraControls.classList.remove("hidden");
-
     resultControls.classList.add("hidden");
 
-    status.textContent =
-      "Kamera siap 📸";
+    status.textContent = "Kamera siap 📸";
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     console.error(error);
 
     camera.style.display = "none";
-
     cameraPlaceholder.style.display = "flex";
 
     status.textContent =
-      "Tidak bisa membuka kamera. Izinkan akses kamera di browser.";
+      "Kamera tidak bisa dibuka. Izinkan akses kamera.";
 
   }
 
@@ -142,30 +90,19 @@ captureBtn.addEventListener("click", async () => {
     camera.videoHeight === 0
   ) {
 
-    status.textContent =
-      "Kamera belum siap.";
-
+    status.textContent = "Kamera belum siap.";
     return;
 
   }
 
-  canvas.width =
-    camera.videoWidth;
+  canvas.width = camera.videoWidth;
+  canvas.height = camera.videoHeight;
 
-  canvas.height =
-    camera.videoHeight;
+  const ctx = canvas.getContext("2d");
 
-  const ctx =
-    canvas.getContext("2d");
-
-  // Mirror selfie
   ctx.save();
 
-  ctx.translate(
-    canvas.width,
-    0
-  );
-
+  ctx.translate(canvas.width, 0);
   ctx.scale(-1, 1);
 
   ctx.drawImage(
@@ -179,28 +116,22 @@ captureBtn.addEventListener("click", async () => {
   ctx.restore();
 
   const image =
-    canvas.toDataURL("image/jpeg", .92);
+    canvas.toDataURL("image/jpeg", 0.92);
 
   photos[photoNumber] = image;
 
-  showPhoto(
-    photoNumber,
-    image
-  );
+  showPhoto(photoNumber, image);
 
   photoNumber++;
 
   if (photoNumber === 1) {
 
-    counter.textContent =
-      "Foto 2 dari 2";
+    counter.textContent = "Foto 2 dari 2";
 
     status.textContent =
       "Foto pertama berhasil! Ambil foto kedua 📸";
 
-  }
-
-  else {
+  } else {
 
     counter.textContent =
       "2 foto selesai ✨";
@@ -230,22 +161,16 @@ function showPhoto(index, image) {
   if (index === 0) {
 
     photo1.src = image;
-
     photo1.style.display = "block";
-
-    photoEmpty[0].style.display =
-      "none";
+    photoEmpty[0].style.display = "none";
 
   }
 
   if (index === 1) {
 
     photo2.src = image;
-
     photo2.style.display = "block";
-
-    photoEmpty[1].style.display =
-      "none";
+    photoEmpty[1].style.display = "none";
 
   }
 
@@ -262,40 +187,33 @@ function countdownAnimation() {
 
     let number = 3;
 
-    countdown.textContent =
-      number;
+    countdown.textContent = number;
 
-    const timer =
-      setInterval(() => {
+    const timer = setInterval(() => {
 
-        number--;
+      number--;
 
-        if (number > 0) {
+      if (number > 0) {
 
-          countdown.textContent =
-            number;
+        countdown.textContent = number;
 
-        }
+      } else {
 
-        else {
+        countdown.textContent = "📸";
 
-          countdown.textContent =
-            "📸";
+        clearInterval(timer);
 
-          clearInterval(timer);
+        setTimeout(() => {
 
-          setTimeout(() => {
+          countdown.textContent = "";
 
-            countdown.textContent =
-              "";
+          resolve();
 
-            resolve();
+        }, 350);
 
-          }, 350);
+      }
 
-        }
-
-      }, 700);
+    }, 700);
 
   });
 
@@ -306,123 +224,96 @@ function countdownAnimation() {
 // GALERI
 // =====================================
 
-galleryInput.addEventListener(
-  "change",
-  event => {
+galleryInput.addEventListener("change", event => {
 
-    const files =
-      Array.from(event.target.files)
-        .filter(file =>
-          file.type.startsWith("image/")
-        )
-        .slice(0, 2);
+  const files =
+    Array.from(event.target.files)
+      .filter(file =>
+        file.type.startsWith("image/")
+      )
+      .slice(0, 2);
 
-    if (files.length === 0) {
+  if (files.length === 0) {
 
-      status.textContent =
-        "Pilih gambar terlebih dahulu.";
+    status.textContent =
+      "Pilih gambar terlebih dahulu.";
 
-      return;
-
-    }
-
-    stopCamera();
-
-    photos = [];
-
-    photoNumber = files.length;
-
-    files.forEach((file, index) => {
-
-      const reader =
-        new FileReader();
-
-      reader.onload = e => {
-
-        const image =
-          e.target.result;
-
-        photos[index] =
-          image;
-
-        showPhoto(
-          index,
-          image
-        );
-
-        if (photos.filter(Boolean).length === files.length) {
-
-          cameraPlaceholder.style.display =
-            "none";
-
-          camera.style.display =
-            "none";
-
-          cameraControls.classList.add(
-            "hidden"
-          );
-
-          resultControls.classList.remove(
-            "hidden"
-          );
-
-          counter.textContent =
-            files.length === 2
-              ? "2 foto dipilih ✨"
-              : "1 foto dipilih";
-
-          status.textContent =
-            "Foto dari galeri berhasil dipilih 🖼️";
-
-        }
-
-      };
-
-      reader.readAsDataURL(file);
-
-    });
+    return;
 
   }
-);
+
+  stopCamera();
+
+  photos = [];
+  photoNumber = files.length;
+
+  files.forEach((file, index) => {
+
+    const reader = new FileReader();
+
+    reader.onload = e => {
+
+      const image = e.target.result;
+
+      photos[index] = image;
+
+      showPhoto(index, image);
+
+      if (
+        photos.filter(Boolean).length === files.length
+      ) {
+
+        cameraPlaceholder.style.display = "none";
+        camera.style.display = "none";
+
+        cameraControls.classList.add("hidden");
+        resultControls.classList.remove("hidden");
+
+        counter.textContent =
+          files.length === 2
+            ? "2 foto dipilih ✨"
+            : "1 foto dipilih";
+
+        status.textContent =
+          "Foto dari galeri berhasil dipilih 🖼️";
+
+      }
+
+    };
+
+    reader.readAsDataURL(file);
+
+  });
+
+});
 
 
 // =====================================
 // TUTUP KAMERA
 // =====================================
 
-stopBtn.addEventListener(
-  "click",
-  () => {
+stopBtn.addEventListener("click", () => {
 
-    stopCamera();
+  stopCamera();
 
-    cameraControls.classList.add(
-      "hidden"
-    );
+  cameraControls.classList.add("hidden");
 
-    camera.style.display =
-      "none";
+  camera.style.display = "none";
 
-    if (photos.length === 0) {
-
-      cameraPlaceholder.style.display =
-        "flex";
-
-    }
-
+  if (photos.length === 0) {
+    cameraPlaceholder.style.display = "flex";
   }
-);
+
+});
 
 
 function stopCamera() {
 
   if (stream) {
 
-    stream
-      .getTracks()
-      .forEach(track => {
-        track.stop();
-      });
+    stream.getTracks().forEach(track => {
+      track.stop();
+    });
 
     stream = null;
 
@@ -437,292 +328,476 @@ function stopCamera() {
 // ULANGI
 // =====================================
 
-againBtn.addEventListener(
-  "click",
-  () => {
+againBtn.addEventListener("click", () => {
 
-    stopCamera();
+  stopCamera();
 
-    photos = [];
+  photos = [];
+  photoNumber = 0;
 
-    photoNumber = 0;
+  photo1.src = "";
+  photo2.src = "";
 
-    photo1.src = "";
-    photo2.src = "";
+  photo1.style.display = "none";
+  photo2.style.display = "none";
 
-    photo1.style.display =
-      "none";
+  photoEmpty[0].style.display = "flex";
+  photoEmpty[1].style.display = "flex";
 
-    photo2.style.display =
-      "none";
+  photoResult.style.display = "none";
 
-    photoEmpty[0].style.display =
-      "flex";
+  camera.style.display = "none";
 
-    photoEmpty[1].style.display =
-      "flex";
+  cameraPlaceholder.style.display = "flex";
 
-    photoResult.style.display =
-      "none";
+  cameraControls.classList.add("hidden");
+  resultControls.classList.add("hidden");
 
-    camera.style.display =
-      "none";
+  galleryInput.value = "";
 
-    cameraPlaceholder.style.display =
-      "flex";
+  counter.textContent = "Foto 1 dari 2";
 
-    cameraControls.classList.add(
-      "hidden"
-    );
+  status.textContent = "";
 
-    resultControls.classList.add(
-      "hidden"
-    );
-
-    galleryInput.value =
-      "";
-
-    counter.textContent =
-      "Foto 1 dari 2";
-
-    status.textContent =
-      "";
-
-  }
-);
+});
 
 
 // =====================================
-// SIMPAN HASIL
+// SIMPAN HASIL DENGAN BANYAK DEKORASI
 // =====================================
 
-downloadBtn.addEventListener(
-  "click",
-  async () => {
+downloadBtn.addEventListener("click", async () => {
 
-    if (photos.filter(Boolean).length === 0) {
-      return;
-    }
+  const validPhotos = photos.filter(Boolean);
 
-    const output =
-      document.createElement("canvas");
+  if (validPhotos.length === 0) return;
 
-    const ctx =
-      output.getContext("2d");
+  const output = document.createElement("canvas");
 
-    const width = 1200;
-    const height = 900;
+  const ctx = output.getContext("2d");
 
-    output.width =
-      width;
+  const width = 1200;
+  const height = 950;
 
-    output.height =
-      height;
+  output.width = width;
+  output.height = height;
 
-    // BACKGROUND
-    const gradient =
-      ctx.createLinearGradient(
-        0,
-        0,
-        width,
-        height
-      );
 
-    gradient.addColorStop(
-      0,
-      "#38245c"
+  // =================================
+  // BACKGROUND GRADIENT
+  // =================================
+
+  const gradient = ctx.createLinearGradient(
+    0,
+    0,
+    width,
+    height
+  );
+
+  gradient.addColorStop(0, "#ffd9ec");
+  gradient.addColorStop(0.35, "#e6ddff");
+  gradient.addColorStop(0.7, "#d9f4ff");
+  gradient.addColorStop(1, "#d8ffe9");
+
+  ctx.fillStyle = gradient;
+
+  ctx.fillRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+
+  // =================================
+  // BUBBLE BACKGROUND
+  // =================================
+
+  drawBubble(ctx, 80, 170, 75);
+  drawBubble(ctx, 1120, 190, 90);
+  drawBubble(ctx, 100, 680, 95);
+  drawBubble(ctx, 1100, 700, 80);
+
+  drawBubble(ctx, 250, 90, 35);
+  drawBubble(ctx, 950, 80, 45);
+  drawBubble(ctx, 40, 470, 40);
+  drawBubble(ctx, 1160, 470, 45);
+
+
+  // =================================
+  // SPARKLES
+  // =================================
+
+  drawSparkle(ctx, 70, 90, 30);
+  drawSparkle(ctx, 1130, 100, 35);
+
+  drawSparkle(ctx, 70, 850, 35);
+  drawSparkle(ctx, 1130, 850, 30);
+
+  drawSparkle(ctx, 270, 160, 18);
+  drawSparkle(ctx, 930, 160, 18);
+
+  drawSparkle(ctx, 300, 820, 20);
+  drawSparkle(ctx, 900, 820, 20);
+
+
+  // =================================
+  // BINTANG KECIL
+  // =================================
+
+  const stars = [
+    [140, 130],
+    [210, 220],
+    [1020, 240],
+    [1070, 330],
+    [130, 400],
+    [1080, 510],
+    [170, 760],
+    [1030, 780],
+    [330, 100],
+    [870, 105]
+  ];
+
+  ctx.fillStyle = "#ffffffaa";
+
+  ctx.font = "25px Arial";
+
+  stars.forEach(([x, y]) => {
+    ctx.fillText("✦", x, y);
+  });
+
+
+  // =================================
+  // HATI
+  // =================================
+
+  ctx.font = "32px Arial";
+
+  ctx.fillStyle = "#ff6fae";
+
+  ctx.fillText("♡", 120, 260);
+  ctx.fillText("♡", 1060, 290);
+  ctx.fillText("♡", 115, 600);
+  ctx.fillText("♡", 1060, 620);
+
+
+  // =================================
+  // BUNGA
+  // =================================
+
+  ctx.font = "35px Arial";
+
+  ctx.fillStyle = "#ffffff";
+
+  ctx.fillText("✿", 175, 340);
+  ctx.fillText("✿", 1020, 370);
+  ctx.fillText("❀", 160, 710);
+  ctx.fillText("❀", 1040, 750);
+
+
+  // =================================
+  // JUDUL
+  // =================================
+
+  ctx.textAlign = "center";
+
+  ctx.fillStyle = "#4d3b68";
+
+  ctx.font = "bold 44px Arial";
+
+  ctx.fillText(
+    "PHOTOBOOTH",
+    width / 2,
+    65
+  );
+
+  ctx.font = "20px Arial";
+
+  ctx.fillStyle = "#735f87";
+
+  ctx.fillText(
+    "✦ little moments, big memories ✦",
+    width / 2,
+    95
+  );
+
+
+  // =================================
+  // LOAD FOTO
+  // =================================
+
+  const images =
+    await Promise.all(
+      validPhotos.map(src => loadImage(src))
     );
 
-    gradient.addColorStop(
-      1,
-      "#172f48"
-    );
 
-    ctx.fillStyle =
-      gradient;
+  // =================================
+  // UKURAN FOTO
+  // =================================
+
+  const photoWidth =
+    images.length === 2
+      ? 500
+      : 1000;
+
+  const photoHeight =
+    680;
+
+  const gap = 35;
+
+  const totalWidth =
+    images.length === 2
+      ? photoWidth * 2 + gap
+      : photoWidth;
+
+  const startX =
+    (width - totalWidth) / 2;
+
+
+  // =================================
+  // FOTO
+  // =================================
+
+  images.forEach((img, index) => {
+
+    const x =
+      startX +
+      index *
+      (photoWidth + gap);
+
+    const y = 125;
+
+
+    // SHADOW
+
+    ctx.save();
+
+    ctx.shadowColor =
+      "rgba(80,50,100,.3)";
+
+    ctx.shadowBlur = 25;
+
+    ctx.shadowOffsetY = 10;
+
+    ctx.fillStyle = "white";
 
     ctx.fillRect(
-      0,
-      0,
-      width,
-      height
+      x - 12,
+      y - 12,
+      photoWidth + 24,
+      photoHeight + 24
     );
 
-    // DEKORASI
+    ctx.restore();
+
+
+    // FRAME
+
+    ctx.fillStyle = "white";
+
+    ctx.fillRect(
+      x - 8,
+      y - 8,
+      photoWidth + 16,
+      photoHeight + 16
+    );
+
+
+    // FOTO
+
+    ctx.save();
+
+    ctx.beginPath();
+
+    ctx.rect(
+      x,
+      y,
+      photoWidth,
+      photoHeight
+    );
+
+    ctx.clip();
+
+    const scale =
+      Math.max(
+        photoWidth / img.width,
+        photoHeight / img.height
+      );
+
+    const w =
+      img.width * scale;
+
+    const h =
+      img.height * scale;
+
+    ctx.drawImage(
+      img,
+
+      x +
+      (photoWidth - w) / 2,
+
+      y +
+      (photoHeight - h) / 2,
+
+      w,
+      h
+    );
+
+    ctx.restore();
+
+
+    // NOMOR
+
     ctx.fillStyle =
-      "rgba(255,255,255,.55)";
+      "rgba(255,255,255,.9)";
 
     ctx.font =
-      "60px Arial";
-
-    ctx.fillText(
-      "✦",
-      70,
-      100
-    );
-
-    ctx.fillText(
-      "♡",
-      1080,
-      120
-    );
-
-    ctx.fillText(
-      "✿",
-      70,
-      820
-    );
-
-    ctx.fillText(
-      "✦",
-      1080,
-      820
-    );
-
-    // TITLE
-    ctx.fillStyle =
-      "white";
-
-    ctx.font =
-      "bold 42px Arial";
+      "bold 18px Arial";
 
     ctx.textAlign =
       "center";
 
     ctx.fillText(
-      "PHOTOBOOTH ✦",
-      width / 2,
-      65
+      index === 0 ? "01" : "02",
+      x + photoWidth / 2,
+      y + photoHeight + 42
     );
 
-    const validPhotos =
-      photos.filter(Boolean);
+  });
 
-    const images =
-      await Promise.all(
-        validPhotos.map(src =>
-          loadImage(src)
-        )
-      );
 
-    const photoWidth =
-      validPhotos.length === 2
-        ? 500
-        : 1000;
+  // =================================
+  // FOOTER
+  // =================================
 
-    const photoHeight =
-      680;
+  ctx.textAlign = "center";
 
-    const gap =
-      35;
+  ctx.fillStyle = "#665274";
 
-    const totalWidth =
-      validPhotos.length === 2
-        ? photoWidth * 2 + gap
-        : photoWidth;
+  ctx.font =
+    "bold 22px Arial";
 
-    const startX =
-      (width - totalWidth) / 2;
+  ctx.fillText(
+    "♡ memories to keep forever ♡",
+    width / 2,
+    height - 28
+  );
 
-    images.forEach(
-      (img, index) => {
 
-        const x =
-          startX +
-          index *
-          (photoWidth + gap);
+  // =================================
+  // DOWNLOAD
+  // =================================
 
-        const y =
-          105;
+  const link =
+    document.createElement("a");
 
-        // FRAME
-        ctx.fillStyle =
-          "white";
+  link.download =
+    "photobooth-" +
+    Date.now() +
+    ".png";
 
-        ctx.fillRect(
-          x - 10,
-          y - 10,
-          photoWidth + 20,
-          photoHeight + 20
-        );
+  link.href =
+    output.toDataURL("image/png");
 
-        // IMAGE
-        ctx.save();
+  link.click();
 
-        ctx.beginPath();
+  status.textContent =
+    "Hasil photobooth berhasil disimpan 💾✨";
 
-        ctx.rect(
-          x,
-          y,
-          photoWidth,
-          photoHeight
-        );
+});
 
-        ctx.clip();
 
-        const scale =
-          Math.max(
-            photoWidth / img.width,
-            photoHeight / img.height
-          );
+// =====================================
+// BUBBLE
+// =====================================
 
-        const w =
-          img.width * scale;
+function drawBubble(ctx, x, y, radius) {
 
-        const h =
-          img.height * scale;
+  ctx.save();
 
-        ctx.drawImage(
-          img,
-          x +
-            (photoWidth - w) / 2,
-          y +
-            (photoHeight - h) / 2,
-          w,
-          h
-        );
+  ctx.fillStyle =
+    "rgba(255,255,255,.28)";
 
-        ctx.restore();
+  ctx.beginPath();
 
-      }
-    );
+  ctx.arc(
+    x,
+    y,
+    radius,
+    0,
+    Math.PI * 2
+  );
 
-    // FOOTER
-    ctx.fillStyle =
-      "rgba(255,255,255,.8)";
+  ctx.fill();
 
-    ctx.font =
-      "20px Arial";
+  ctx.restore();
 
-    ctx.textAlign =
-      "center";
+}
 
-    ctx.fillText(
-      "made with ✦ PhotoBooth",
-      width / 2,
-      height - 35
-    );
 
-    const link =
-      document.createElement("a");
+// =====================================
+// SPARKLE
+// =====================================
 
-    link.download =
-      "photobooth-" +
-      Date.now() +
-      ".png";
+function drawSparkle(ctx, x, y, size) {
 
-    link.href =
-      output.toDataURL(
-        "image/png"
-      );
+  ctx.save();
 
-    link.click();
+  ctx.translate(x, y);
 
-    status.textContent =
-      "Hasil berhasil disimpan 💾";
+  ctx.fillStyle =
+    "rgba(255,255,255,.8)";
 
-  }
-);
+  ctx.beginPath();
+
+  ctx.moveTo(
+    0,
+    -size
+  );
+
+  ctx.lineTo(
+    size * .25,
+    -size * .25
+  );
+
+  ctx.lineTo(
+    size,
+    0
+  );
+
+  ctx.lineTo(
+    size * .25,
+    size * .25
+  );
+
+  ctx.lineTo(
+    0,
+    size
+  );
+
+  ctx.lineTo(
+    -size * .25,
+    size * .25
+  );
+
+  ctx.lineTo(
+    -size,
+    0
+  );
+
+  ctx.lineTo(
+    -size * .25,
+    -size * .25
+  );
+
+  ctx.closePath();
+
+  ctx.fill();
+
+  ctx.restore();
+
+}
 
 
 // =====================================
@@ -731,20 +806,15 @@ downloadBtn.addEventListener(
 
 function loadImage(src) {
 
-  return new Promise(
-    resolve => {
+  return new Promise(resolve => {
 
-      const img =
-        new Image();
+    const img = new Image();
 
-      img.onload = () =>
-        resolve(img);
+    img.onload = () => resolve(img);
 
-      img.src =
-        src;
+    img.src = src;
 
-    }
-  );
+  });
 
 }
 
@@ -755,7 +825,5 @@ function loadImage(src) {
 
 window.addEventListener(
   "beforeunload",
-  () => {
-    stopCamera();
-  }
+  stopCamera
 );
