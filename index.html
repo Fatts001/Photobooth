@@ -3,50 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PhotoBooth</title>
+  <title>Dreamy PhotoBooth</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<div class="app">
-  <h1>📸 PhotoBooth</h1>
-  <p>Pilih kamera atau foto dari galeri</p>
+<div class="decor decor1">✦</div>
+<div class="decor decor2">♡</div>
+<div class="decor decor3">✿</div>
+<div class="decor decor4">✦</div>
+<div class="decor decor5">♡</div>
 
-  <div class="preview">
+<div class="app">
+
+  <div class="title">
+    <div class="mini">✦ PHOTOBOOTH ✦</div>
+    <h1>Capture the Moment 📸</h1>
+    <p>Ambil 2 foto dan buat kenanganmu!</p>
+  </div>
+
+  <div class="booth">
+
+    <div class="photos">
+
+      <div class="photo-frame">
+        <div class="number">01</div>
+        <div class="empty-photo">📷</div>
+        <img id="photo1">
+      </div>
+
+      <div class="photo-frame">
+        <div class="number">02</div>
+        <div class="empty-photo">📷</div>
+        <img id="photo2">
+      </div>
+
+    </div>
+
     <video id="camera" autoplay playsinline></video>
-    <img id="photoPreview">
-    <div id="empty">📷<br><small>Belum ada foto</small></div>
+    <canvas id="canvas"></canvas>
+
+    <div id="cameraPlaceholder">
+      <span>📸</span>
+      <p>Kamera belum dibuka</p>
+    </div>
+
+  </div>
+
+  <div class="counter" id="counter">
+    Foto 1 dari 2
   </div>
 
   <div class="buttons">
-    <button id="cameraBtn">📷 Buka Kamera</button>
+
+    <button id="cameraBtn">
+      📷 Buka Kamera
+    </button>
 
     <label for="galleryInput" class="galleryBtn">
-      🖼️ Pilih Galeri
+      🖼️ Pilih dari Galeri
     </label>
 
     <input
       type="file"
       id="galleryInput"
       accept="image/*"
+      multiple
     >
+
   </div>
 
   <div id="cameraControls" class="hidden">
-    <button id="captureBtn" class="capture">●</button>
-    <button id="stopBtn">✖ Tutup Kamera</button>
+
+    <div id="countdown"></div>
+
+    <button id="captureBtn" class="capture">
+      ●
+    </button>
+
+    <button id="stopBtn">
+      ✕ Tutup Kamera
+    </button>
+
   </div>
 
   <div id="resultControls" class="hidden">
-    <button id="downloadBtn">💾 Simpan Foto</button>
-    <button id="againBtn">🔄 Foto Lagi</button>
+
+    <button id="downloadBtn">
+      💾 Simpan Hasil
+    </button>
+
+    <button id="againBtn">
+      🔄 Ulangi
+    </button>
+
   </div>
 
   <p id="status"></p>
+
 </div>
 
-<canvas id="canvas"></canvas>
-
 <script src="script.js"></script>
+
 </body>
 </html>
