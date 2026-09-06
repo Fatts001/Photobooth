@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Foto Profil Google -->
+        <img id="userPic" src="" alt="Foto Profil" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px; border: 2px solid #667eea;">
+        
+        <h2 id="welcomeText">Selamat Datang!</h2>
+        <p id="userEmail" style="color: #666; margin-bottom: 25px;"></p>
+        
+        <button id="logoutBtn" class="btn" style="background: #e53e3e;">Keluar (Logout)</button>
+    </div>
+
+    <script>
+        // Ambil data yang disimpan saat login tadi
+        const name = sessionStorage.getItem('userName');
+        const email = sessionStorage.getItem('userEmail');
+        const pic = sessionStorage.getItem('userPic');
+
+        // Jika user memaksa masuk dashboard tanpa login, kembalikan ke index.html
+        if (!email) {
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('welcomeText').innerText = `Halo, ${name}! 🎉`;
+            document.getElementById('userEmail').innerText = email;
+            document.getElementById('userPic').src = pic;
+        }
+
+        // Tombol Logout
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
