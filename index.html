@@ -20,9 +20,9 @@
     <!-- Firebase SDK & Logika Utama -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Konfigurasi Firebase baru Anda
+        // Konfigurasi Firebase Anda
         const firebaseConfig = {
             apiKey: "AIzaSyBIkoKjrPOzvA-3jFl_SZV",
             authDomain: "photobooth-v.firebaseapp.com",
@@ -54,14 +54,28 @@
                 const userName = responsePayload.name;
                 const userPic = responsePayload.picture;
 
-                // Simpan ke Firestore secara permanen
-                await setDoc(doc(db, "users", userEmail), {
-                    nama: userName,
-                    email: userEmail,
-                    foto: userPic,
-                    saldo: 0,
-                    loginTerakhir: serverTimestamp()
-                }, { merge: true });
+                // Cek apakah data user sudah ada di Firestore sebelumnya
+                const userRef = doc(db, "users", userEmail);
+                const userSnap = await getDoc(userRef);
+
+                if (!userSnap.exists()) {
+                    // Jika user BARU pertama kali login, buat data dengan saldo 0
+                    await setDoc(userRef, {
+                        nama: userName,
+                        email: userEmail,
+                        foto: userPic,
+                        saldo: 0,
+                        loginTerakhir: serverTimestamp()
+                    });
+                } else {
+                    // Jika user SUDAH PERNAH login sebelumnya, JANGAN reset saldo ke 0!
+                    // Hanya update nama, foto, dan waktu login terakhirnya saja.
+                    await setDoc(userRef, {
+                        nama: userName,
+                        foto: userPic,
+                        loginTerakhir: serverTimestamp()
+                    }, { merge: true });
+                }
 
                 // Simpan sesi sementara
                 sessionStorage.setItem('userName', userName);
