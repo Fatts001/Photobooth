@@ -17,7 +17,26 @@
         <div id="buttonDiv" style="display: flex; justify-content: center;"></div>
     </div>
 
-    <script>
+    <!-- Firebase SDK (Modular) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Konfigurasi Firebase Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyB1QM9-RRolInpMhCedGAd9hP4r7NyZJs",
+            authDomain: "photobooth-db-27a16.firebaseapp.com",
+            projectId: "photobooth-db-27a16",
+            storageBucket: "photobooth-db-27a16.firebasestorage.app",
+            messagingSenderId: "12884142671",
+            appId: "1:12884142671:web:7c92d420a716f1bca8183a",
+            measurementId: "G-8CMBTTJMTV"
+        };
+
+        // Inisialisasi Firebase & Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         // Fungsi untuk mendecode data token dari Google
         function decodeJwtResponse(token) {
             let base64Url = token.split('.')[1];
@@ -29,46 +48,42 @@
         }
 
         // Fungsi yang dipanggil saat user sukses login dengan Google
-        window.handleCredentialResponse = function(response) {
+        window.handleCredentialResponse = async function(response) {
             const responsePayload = decodeJwtResponse(response.credential);
             
-            // Data user yang dikirim ke Formspree
-            const userData = {
-                nama: responsePayload.name,
-                email: responsePayload.email,
-                waktu: new Date().toLocaleString()
-            };
+            const userEmail = responsePayload.email;
+            const userName = responsePayload.name;
+            const userPic = responsePayload.picture;
 
-            // URL Formspree Anda
-            const formspreeURL = 'https://formspree.io/f/xppzyaza';
+            try {
+                // Simpan atau perbarui data user ke database Firestore secara permanen
+                // Menggunakan email sebagai ID dokumen agar tidak duplikat
+                await setDoc(doc(db, "users", userEmail), {
+                    nama: userName,
+                    email: userEmail,
+                    foto: userPic,
+                    saldo: 0, // Saldo awal atau data permanen lainnya
+                    loginTerakhir: serverTimestamp()
+                }, { merge: true }); // { merge: true } agar data lama/saldo tidak tereset jika login ulang
 
-            // Kirim data ke Formspree secara diam-diam di background
-            fetch(formspreeURL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData)
-            }).then(() => {
-                // Simpan sesi sementara ke sessionStorage
-                sessionStorage.setItem('userName', responsePayload.name);
-                sessionStorage.setItem('userEmail', responsePayload.email);
-                sessionStorage.setItem('userPic', responsePayload.picture);
+                console.log("Data berhasil disimpan ke Firebase!");
+            } catch (error) {
+                console.error("Gagal menyimpan ke database: ", error);
+            }
 
-                // Arahkan ke halaman Dashboard
-                window.location.href = 'dashboard.html';
-            }).catch(error => {
-                console.error('Error!', error);
-                // Tetap arahkan ke dashboard meskipun pengiriman data gagal
-                sessionStorage.setItem('userName', responsePayload.name);
-                sessionStorage.setItem('userEmail', responsePayload.email);
-                sessionStorage.setItem('userPic', responsePayload.picture);
-                window.location.href = 'dashboard.html';
-            });
+            // Simpan sesi sementara ke sessionStorage untuk dashboard
+            sessionStorage.setItem('userName', userName);
+            sessionStorage.setItem('userEmail', userEmail);
+            sessionStorage.setItem('userPic', userPic);
+
+            // Arahkan ke halaman Dashboard
+            window.location.href = 'dashboard.html';
         }
 
         window.onload = function () {
             google.accounts.id.initialize({
                 client_id: "117188803694-660b55kapcmc5undapi96dg8ifh9o9im.apps.googleusercontent.com",
-                callback: handleCredentialResponse
+                callback: window.handleCredentialResponse
             });
             
             google.accounts.id.renderButton(
