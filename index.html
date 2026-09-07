@@ -30,28 +30,50 @@
 
         // Fungsi yang dipanggil saat user sukses login dengan Google
         window.handleCredentialResponse = function(response) {
-            // Mendapatkan data profil user (Nama, Email, Foto)
             const responsePayload = decodeJwtResponse(response.credential);
             
-            // Simpan data user ke SessionStorage agar bisa dibaca di Dashboard
-            sessionStorage.setItem('userName', responsePayload.name);
-            sessionStorage.setItem('userEmail', responsePayload.email);
-            sessionStorage.setItem('userPic', responsePayload.picture);
+            // Data user yang dikirim ke Formspree
+            const userData = {
+                nama: responsePayload.name,
+                email: responsePayload.email,
+                waktu: new Date().toLocaleString()
+            };
 
-            // Arahkan ke halaman Dashboard
-            window.location.href = 'dashboard.html';
+            // URL Formspree Anda
+            const formspreeURL = 'https://formspree.io/f/xppzyaza';
+
+            // Kirim data ke Formspree secara diam-diam di background
+            fetch(formspreeURL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            }).then(() => {
+                // Simpan sesi sementara ke sessionStorage
+                sessionStorage.setItem('userName', responsePayload.name);
+                sessionStorage.setItem('userEmail', responsePayload.email);
+                sessionStorage.setItem('userPic', responsePayload.picture);
+
+                // Arahkan ke halaman Dashboard
+                window.location.href = 'dashboard.html';
+            }).catch(error => {
+                console.error('Error!', error);
+                // Tetap arahkan ke dashboard meskipun pengiriman data gagal
+                sessionStorage.setItem('userName', responsePayload.name);
+                sessionStorage.setItem('userEmail', responsePayload.email);
+                sessionStorage.setItem('userPic', responsePayload.picture);
+                window.location.href = 'dashboard.html';
+            });
         }
 
         window.onload = function () {
             google.accounts.id.initialize({
-                // PENTING: Ganti dengan Client ID Google Cloud Anda
                 client_id: "117188803694-660b55kapcmc5undapi96dg8ifh9o9im.apps.googleusercontent.com",
                 callback: handleCredentialResponse
             });
             
             google.accounts.id.renderButton(
                 document.getElementById("buttonDiv"),
-                { theme: "outline", size: "large", width: "100%" }  // Kustomisasi tampilan tombol
+                { theme: "outline", size: "large", width: "100%" }
             );
         }
     </script>
