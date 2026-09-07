@@ -61,36 +61,95 @@
         .btn-success:hover { background-color: #218838; }
         .btn-danger { background-color: #dc3545; color: white; margin-top: 15px; }
         .btn-danger:hover { background-color: #c82333; }
+
+        /* Modal / Popup QRIS */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .qris-img {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .wa-text {
+            font-size: 13px;
+            color: #d9534f;
+            font-weight: bold;
+            margin: 15px 0;
+            line-height: 1.4;
+        }
+        .btn-close {
+            background-color: #6c757d;
+            color: white;
+            margin-top: 5px;
+        }
+        .btn-close:hover { background-color: #5a6268; }
     </style>
 </head>
 <body>
 
     <div class="dashboard-container">
-        <!-- Foto Profil Google -->
         <img id="userPic" src="" alt="Foto Profil" class="profile-img">
         <h2 id="userName">Memuat Nama...</h2>
         <p id="userEmail" class="email">Memuat Email...</p>
 
-        <!-- Kotak Informasi Saldo Permanen dari Firestore -->
         <div class="card-saldo">
             <h3>Sisa Saldo Anda</h3>
             <p id="userSaldo">Rp 0</p>
         </div>
 
-        <!-- Tombol Fitur-fitur -->
         <button class="menu-btn btn-primary" onclick="mulaiPhotobooth()">📸 Mulai Photobooth</button>
-        <button class="menu-btn btn-success" onclick="tambahSaldo()">➕ Top Up Saldo (Demo)</button>
+        <button class="menu-btn btn-success" onclick="bukaModalTopUp()">➕ Top Up Saldo</button>
         
-        <!-- Tombol Keluar -->
         <button class="menu-btn btn-danger" onclick="logout()">Keluar (Logout)</button>
     </div>
 
-    <!-- Firebase SDK & Logika Dashboard -->
+    <div id="qrisModal" class="modal">
+        <div class="modal-content">
+            <h3>Scan QRIS untuk Top Up</h3>
+            <p style="font-size: 13px; color: #666; margin-bottom: 5px;">Pilih Nominal Top Up</p>
+            
+            <select id="nominalTopUp" class="menu-btn" style="background: #f8f9fa; color: #333; border: 1px solid #ccc; margin-bottom: 10px;">
+                <option value="10000">Rp 10.000</option>
+                <option value="20000">Rp 20.000</option>
+                <option value="50000">Rp 50.000</option>
+                <option value="100000">Rp 100.000</option>
+            </select>
+
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PAYMENT-QRIS-PHOTOBOOTH" alt="QRIS Code" class="qris-img">
+            
+            <p class="wa-text">Jika sudah transfer, klik tombol di bawah agar notifikasi terkirim ke Telegram Admin.</p>
+
+            <button class="menu-btn btn-success" onclick="kirimNotifTelegram()">Kirim Bukti ke Telegram</button>
+            <button class="menu-btn btn-close" onclick="tutupModalTopUp()">Tutup</button>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Konfigurasi Firebase Anda yang terbaru
         const firebaseConfig = {
             apiKey: "AIzaSyBIkoKjrPOzvA-3jFl_SZV",
             authDomain: "photobooth-v.firebaseapp.com",
@@ -104,21 +163,17 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Ambil data sesi dari browser
         const name = sessionStorage.getItem('userName');
         const email = sessionStorage.getItem('userEmail');
         const pic = sessionStorage.getItem('userPic');
 
-        // Jika belum login / sesi kosong, tendang balik ke index.html
         if (!email) {
             window.location.href = 'index.html';
         } else {
-            // Tampilkan data profil ke HTML
             document.getElementById('userName').innerText = name;
             document.getElementById('userEmail').innerText = email;
             document.getElementById('userPic').src = pic;
 
-            // Ambil data saldo terbaru langsung dari Database Firestore
             loadUserData(email);
         }
 
@@ -128,7 +183,6 @@
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    // Tampilkan saldo (format angka rupiah sederhana)
                     let saldo = data.saldo || 0;
                     document.getElementById('userSaldo').innerText = "Rp " + saldo.toLocaleString('id-ID');
                 }
@@ -137,19 +191,59 @@
             }
         }
 
-        // Fungsi Tombol Tambah Saldo (Simulasi Top Up langsung simpan ke Database)
-        window.tambahSaldo = async function() {
+        window.bukaModalTopUp = function() {
+            document.getElementById('qrisModal').style.display = 'flex';
+        }
+
+        window.tutupModalTopUp = function() {
+            document.getElementById('qrisModal').style.display = 'none';
+        }
+
+        // Fungsi Mengirim Notifikasi Langsung ke Bot Telegram Anda
+        window.kirimNotifTelegram = async function() {
+            const nominal = document.getElementById('nominalTopUp').value;
+            const nominalFormatted = parseInt(nominal).toLocaleString('id-ID');
+
+            // Kredensial Telegram Anda
+            const botToken = "8937858897:AAF5POAsvL9AiJAX6SnHiznPlMaV8Ne6oVU";
+            const chatId = "8401116235";
+
+            // Format Pesan untuk Telegram
+            const pesanTelegram = `🔔 *PERMINTAAN TOP UP BARU!*\n\n` +
+                                  `👤 Nama: ${name}\n` +
+                                  `📧 Email: \`${email}\`\n` +
+                                  `💰 Jumlah: *Rp ${nominalFormatted}*\n\n` +
+                                  `_Silakan cek mutasi/QRIS Anda, lalu update saldo user ini via Firebase Console._`;
+
+            const urlAPI = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
             try {
-                const docRef = doc(db, "users", email);
-                // Tambah 10.000 ke database secara permanen
-                await updateDoc(docRef, {
-                    saldo: increment(10000)
+                // Tampilkan loading sebentar
+                alert("Mengirim laporan ke Telegram Admin...");
+
+                const response = await fetch(urlAPI, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: pesanTelegram,
+                        parse_mode: 'Markdown'
+                    })
                 });
-                alert("Berhasil Top Up Rp 10.000!");
-                loadUserData(email); // Refresh tampilan saldo
+
+                const result = await response.json();
+
+                if (result.ok) {
+                    alert("Berhasil! Laporan top up telah dikirim ke Telegram Anda. Silakan cek bot Anda.");
+                    tutupModalTopUp();
+                } else {
+                    alert("Gagal mengirim ke Telegram. Periksa kembali token bot.");
+                }
             } catch (error) {
-                console.error("Gagal top up:", error);
-                alert("Gagal melakukan top up.");
+                console.error("Error Telegram:", error);
+                alert("Terjadi kesalahan jaringan saat menghubungi Telegram.");
             }
         }
 
@@ -158,8 +252,8 @@
         }
 
         window.logout = function() {
-            sessionStorage.clear(); // Bersihkan sesi browser
-            window.location.href = 'index.html'; // Kembali ke halaman login
+            sessionStorage.clear();
+            window.location.href = 'index.html';
         }
     </script>
 </body>
