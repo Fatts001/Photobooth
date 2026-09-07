@@ -62,7 +62,7 @@
         .btn-danger { background-color: #dc3545; color: white; margin-top: 15px; }
         .btn-danger:hover { background-color: #c82333; }
 
-        /* Modal / Popup QRIS */
+        /* Modal QRIS */
         .modal {
             display: none;
             position: fixed;
@@ -92,7 +92,7 @@
             border: 1px solid #ddd;
             border-radius: 8px;
         }
-        .wa-text {
+        .info-text {
             font-size: 13px;
             color: #d9534f;
             font-weight: bold;
@@ -110,26 +110,32 @@
 <body>
 
     <div class="dashboard-container">
+        <!-- Foto Profil Google -->
         <img id="userPic" src="" alt="Foto Profil" class="profile-img">
         <h2 id="userName">Memuat Nama...</h2>
         <p id="userEmail" class="email">Memuat Email...</p>
 
+        <!-- Kotak Informasi Saldo -->
         <div class="card-saldo">
             <h3>Sisa Saldo Anda</h3>
             <p id="userSaldo">Rp 0</p>
         </div>
 
+        <!-- Tombol Menu -->
         <button class="menu-btn btn-primary" onclick="mulaiPhotobooth()">📸 Mulai Photobooth</button>
         <button class="menu-btn btn-success" onclick="bukaModalTopUp()">➕ Top Up Saldo</button>
         
+        <!-- Tombol Keluar -->
         <button class="menu-btn btn-danger" onclick="logout()">Keluar (Logout)</button>
     </div>
 
+    <!-- Modal QRIS Top Up -->
     <div id="qrisModal" class="modal">
         <div class="modal-content">
             <h3>Scan QRIS untuk Top Up</h3>
             <p style="font-size: 13px; color: #666; margin-bottom: 5px;">Pilih Nominal Top Up</p>
             
+            <!-- Pilihan Nominal -->
             <select id="nominalTopUp" class="menu-btn" style="background: #f8f9fa; color: #333; border: 1px solid #ccc; margin-bottom: 10px;">
                 <option value="10000">Rp 10.000</option>
                 <option value="20000">Rp 20.000</option>
@@ -137,18 +143,20 @@
                 <option value="100000">Rp 100.000</option>
             </select>
 
+            <!-- Gambar QRIS -->
             <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PAYMENT-QRIS-PHOTOBOOTH" alt="QRIS Code" class="qris-img">
             
-            <p class="wa-text">Jika sudah transfer, klik tombol di bawah agar notifikasi terkirim ke Telegram Admin.</p>
+            <p class="info-text">Jika sudah transfer, klik tombol di bawah agar notifikasi terkirim ke Telegram.</p>
 
             <button class="menu-btn btn-success" onclick="kirimNotifTelegram()">Kirim Bukti ke Telegram</button>
             <button class="menu-btn btn-close" onclick="tutupModalTopUp()">Tutup</button>
         </div>
     </div>
 
+    <!-- Firebase SDK & Logika Dashboard -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBIkoKjrPOzvA-3jFl_SZV",
@@ -170,9 +178,9 @@
         if (!email) {
             window.location.href = 'index.html';
         } else {
-            document.getElementById('userName').innerText = name;
+            document.getElementById('userName').innerText = name || "User Photobooth";
             document.getElementById('userEmail').innerText = email;
-            document.getElementById('userPic').src = pic;
+            if(pic) document.getElementById('userPic').src = pic;
 
             loadUserData(email);
         }
@@ -185,6 +193,13 @@
                     const data = docSnap.data();
                     let saldo = data.saldo || 0;
                     document.getElementById('userSaldo').innerText = "Rp " + saldo.toLocaleString('id-ID');
+                } else {
+                    // Jika user baru pertama kali login dan belum ada di Firestore, daftarkan otomatis dengan saldo 0
+                    await setDoc(docRef, {
+                        email: userEmail,
+                        saldo: 0
+                    });
+                    document.getElementById('userSaldo').innerText = "Rp 0";
                 }
             } catch (error) {
                 console.error("Gagal memuat saldo:", error);
@@ -199,51 +214,56 @@
             document.getElementById('qrisModal').style.display = 'none';
         }
 
-        // Fungsi Mengirim Notifikasi Langsung ke Bot Telegram Anda
+        // Fungsi Mengirim Notifikasi ke Telegram Lengkap dengan Tombol Interaktif
         window.kirimNotifTelegram = async function() {
             const nominal = document.getElementById('nominalTopUp').value;
             const nominalFormatted = parseInt(nominal).toLocaleString('id-ID');
 
-            // Kredensial Telegram Anda
             const botToken = "8937858897:AAF5POAsvL9AiJAX6SnHiznPlMaV8Ne6oVU";
             const chatId = "8401116235";
 
-            // Format Pesan untuk Telegram
             const pesanTelegram = `🔔 *PERMINTAAN TOP UP BARU!*\n\n` +
-                                  `👤 Nama: ${name}\n` +
+                                  `👤 Nama: ${name || 'User'}\n` +
                                   `📧 Email: \`${email}\`\n` +
                                   `💰 Jumlah: *Rp ${nominalFormatted}*\n\n` +
-                                  `_Silakan cek mutasi/QRIS Anda, lalu update saldo user ini via Firebase Console._`;
+                                  `_Klik tombol di bawah untuk konfirmasi otomatis:_`;
+
+            const inlineKeyboard = {
+                inline_keyboard: [
+                    [
+                        { text: "✅ Konfirmasi (+Rp " + nominalFormatted + ")", callback_data: `approve_${email}_${nominal}` },
+                        { text: "❌ Tolak", callback_data: `reject_${email}_${nominal}` }
+                    ]
+                ]
+            };
 
             const urlAPI = `https://api.telegram.org/bot${botToken}/sendMessage`;
 
             try {
-                // Tampilkan loading sebentar
-                alert("Mengirim laporan ke Telegram Admin...");
+                alert("Mengirim laporan ke Telegram...");
 
                 const response = await fetch(urlAPI, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         chat_id: chatId,
                         text: pesanTelegram,
-                        parse_mode: 'Markdown'
+                        parse_mode: 'Markdown',
+                        reply_markup: inlineKeyboard
                     })
                 });
 
                 const result = await response.json();
 
                 if (result.ok) {
-                    alert("Berhasil! Laporan top up telah dikirim ke Telegram Anda. Silakan cek bot Anda.");
+                    alert("Berhasil! Laporan dan tombol konfirmasi telah dikirim ke Telegram Anda.");
                     tutupModalTopUp();
                 } else {
-                    alert("Gagal mengirim ke Telegram. Periksa kembali token bot.");
+                    alert("Gagal mengirim ke Telegram.");
                 }
             } catch (error) {
                 console.error("Error Telegram:", error);
-                alert("Terjadi kesalahan jaringan saat menghubungi Telegram.");
+                alert("Terjadi kesalahan jaringan.");
             }
         }
 
