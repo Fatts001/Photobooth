@@ -3,40 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Dashboard Photobooth</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .dashboard-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .profile-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid #007bff;
+        }
+        h2 { margin: 5px 0; color: #333; }
+        p.email { color: #666; font-size: 14px; margin-bottom: 20px; }
+        .card-saldo {
+            background: #e9f5ff;
+            border: 1px solid #bce8ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .card-saldo h3 { margin: 0; color: #0056b3; font-size: 16px; }
+        .card-saldo p { font-size: 24px; font-weight: bold; color: #007bff; margin: 5px 0 0 0; }
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-success:hover { background-color: #218838; }
+        .btn-danger { background-color: #dc3545; color: white; margin-top: 15px; }
+        .btn-danger:hover { background-color: #c82333; }
+    </style>
 </head>
 <body>
+
     <div class="dashboard-container">
         <!-- Foto Profil Google -->
-        <img id="userPic" src="" alt="Foto Profil" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 15px; border: 2px solid #667eea;">
+        <img id="userPic" src="" alt="Foto Profil" class="profile-img">
+        <h2 id="userName">Memuat Nama...</h2>
+        <p id="userEmail" class="email">Memuat Email...</p>
+
+        <!-- Kotak Informasi Saldo Permanen dari Firestore -->
+        <div class="card-saldo">
+            <h3>Sisa Saldo Anda</h3>
+            <p id="userSaldo">Rp 0</p>
+        </div>
+
+        <!-- Tombol Fitur-fitur -->
+        <button class="menu-btn btn-primary" onclick="mulaiPhotobooth()">📸 Mulai Photobooth</button>
+        <button class="menu-btn btn-success" onclick="tambahSaldo()">➕ Top Up Saldo (Demo)</button>
         
-        <h2 id="welcomeText">Selamat Datang!</h2>
-        <p id="userEmail" style="color: #666; margin-bottom: 25px;"></p>
-        
-        <button id="logoutBtn" class="btn" style="background: #e53e3e;">Keluar (Logout)</button>
+        <!-- Tombol Keluar -->
+        <button class="menu-btn btn-danger" onclick="logout()">Keluar (Logout)</button>
     </div>
 
-    <script>
-        // Ambil data yang disimpan saat login tadi
+    <!-- Firebase SDK & Logika Dashboard -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Konfigurasi Firebase Anda yang terbaru
+        const firebaseConfig = {
+            apiKey: "AIzaSyBIkoKjrPOzvA-3jFl_SZV",
+            authDomain: "photobooth-v.firebaseapp.com",
+            projectId: "photobooth-v",
+            storageBucket: "photobooth-v.firebasestorage.app",
+            messagingSenderId: "1031549781795",
+            appId: "1:1031549781795:web:7cdb9f51",
+            measurementId: "G-ZZQJJKJ1BD"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Ambil data sesi dari browser
         const name = sessionStorage.getItem('userName');
         const email = sessionStorage.getItem('userEmail');
         const pic = sessionStorage.getItem('userPic');
 
-        // Jika user memaksa masuk dashboard tanpa login, kembalikan ke index.html
+        // Jika belum login / sesi kosong, tendang balik ke index.html
         if (!email) {
             window.location.href = 'index.html';
         } else {
-            document.getElementById('welcomeText').innerText = `Halo, ${name}! 🎉`;
+            // Tampilkan data profil ke HTML
+            document.getElementById('userName').innerText = name;
             document.getElementById('userEmail').innerText = email;
             document.getElementById('userPic').src = pic;
+
+            // Ambil data saldo terbaru langsung dari Database Firestore
+            loadUserData(email);
         }
 
-        // Tombol Logout
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            sessionStorage.clear();
-            window.location.href = 'index.html';
-        });
+        async function loadUserData(userEmail) {
+            try {
+                const docRef = doc(db, "users", userEmail);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    // Tampilkan saldo (format angka rupiah sederhana)
+                    let saldo = data.saldo || 0;
+                    document.getElementById('userSaldo').innerText = "Rp " + saldo.toLocaleString('id-ID');
+                }
+            } catch (error) {
+                console.error("Gagal memuat saldo:", error);
+            }
+        }
+
+        // Fungsi Tombol Tambah Saldo (Simulasi Top Up langsung simpan ke Database)
+        window.tambahSaldo = async function() {
+            try {
+                const docRef = doc(db, "users", email);
+                // Tambah 10.000 ke database secara permanen
+                await updateDoc(docRef, {
+                    saldo: increment(10000)
+                });
+                alert("Berhasil Top Up Rp 10.000!");
+                loadUserData(email); // Refresh tampilan saldo
+            } catch (error) {
+                console.error("Gagal top up:", error);
+                alert("Gagal melakukan top up.");
+            }
+        }
+
+        window.mulaiPhotobooth = function() {
+            alert("Fitur Photobooth akan segera dibuka di sini!");
+        }
+
+        window.logout = function() {
+            sessionStorage.clear(); // Bersihkan sesi browser
+            window.location.href = 'index.html'; // Kembali ke halaman login
+        }
     </script>
 </body>
 </html>
