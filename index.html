@@ -17,27 +17,25 @@
         <div id="buttonDiv" style="display: flex; justify-content: center;"></div>
     </div>
 
-    <!-- Firebase SDK (Modular) -->
+    <!-- Firebase SDK & Logika Utama -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Konfigurasi Firebase Anda
+        // Konfigurasi Firebase baru Anda
         const firebaseConfig = {
-            apiKey: "AIzaSyB1QM9-RRolInpMhCedGAd9hP4r7NyZJs",
-            authDomain: "photobooth-db-27a16.firebaseapp.com",
-            projectId: "photobooth-db-27a16",
-            storageBucket: "photobooth-db-27a16.firebasestorage.app",
-            messagingSenderId: "12884142671",
-            appId: "1:12884142671:web:7c92d420a716f1bca8183a",
-            measurementId: "G-8CMBTTJMTV"
+            apiKey: "AIzaSyBIkoKjrPOzvA-3jFl_SZV",
+            authDomain: "photobooth-v.firebaseapp.com",
+            projectId: "photobooth-v",
+            storageBucket: "photobooth-v.firebasestorage.app",
+            messagingSenderId: "1031549781795",
+            appId: "1:1031549781795:web:7cdb9f51",
+            measurementId: "G-ZZQJJKJ1BD"
         };
 
-        // Inisialisasi Firebase & Firestore
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Fungsi untuk mendecode data token dari Google
         function decodeJwtResponse(token) {
             let base64Url = token.split('.')[1];
             let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -47,37 +45,36 @@
             return JSON.parse(jsonPayload);
         }
 
-        // Fungsi yang dipanggil saat user sukses login dengan Google
+        // Definisikan fungsi secara global agar bisa dipanggil Google API
         window.handleCredentialResponse = async function(response) {
-            const responsePayload = decodeJwtResponse(response.credential);
-            
-            const userEmail = responsePayload.email;
-            const userName = responsePayload.name;
-            const userPic = responsePayload.picture;
-
             try {
-                // Simpan atau perbarui data user ke database Firestore secara permanen
-                // Menggunakan email sebagai ID dokumen agar tidak duplikat
+                const responsePayload = decodeJwtResponse(response.credential);
+                
+                const userEmail = responsePayload.email;
+                const userName = responsePayload.name;
+                const userPic = responsePayload.picture;
+
+                // Simpan ke Firestore secara permanen
                 await setDoc(doc(db, "users", userEmail), {
                     nama: userName,
                     email: userEmail,
                     foto: userPic,
-                    saldo: 0, // Saldo awal atau data permanen lainnya
+                    saldo: 0,
                     loginTerakhir: serverTimestamp()
-                }, { merge: true }); // { merge: true } agar data lama/saldo tidak tereset jika login ulang
+                }, { merge: true });
 
-                console.log("Data berhasil disimpan ke Firebase!");
+                // Simpan sesi sementara
+                sessionStorage.setItem('userName', userName);
+                sessionStorage.setItem('userEmail', userEmail);
+                sessionStorage.setItem('userPic', userPic);
+
+                // Langsung lempar ke dashboard tanpa mental
+                window.location.href = 'dashboard.html';
+
             } catch (error) {
-                console.error("Gagal menyimpan ke database: ", error);
+                console.error("Error saat login:", error);
+                alert("Terjadi kesalahan saat memproses login. Coba lagi.");
             }
-
-            // Simpan sesi sementara ke sessionStorage untuk dashboard
-            sessionStorage.setItem('userName', userName);
-            sessionStorage.setItem('userEmail', userEmail);
-            sessionStorage.setItem('userPic', userPic);
-
-            // Arahkan ke halaman Dashboard
-            window.location.href = 'dashboard.html';
         }
 
         window.onload = function () {
