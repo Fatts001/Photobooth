@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Top Up Saldo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .admin-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+        .btn-submit:hover { background-color: #218838; }
+        .info-text {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        <h2>Panel Admin Top Up</h2>
+        
+        <div class="form-group">
+            <label>Email User yang Top Up:</label>
+            <input type="email" id="targetEmail" placeholder="Contoh: user@gmail.com">
+        </div>
+
+        <div class="form-group">
+            <label>Jumlah Saldo yang Ditambahkan (Rp):</label>
+            <input type="number" id="jumlahSaldo" placeholder="Contoh: 10000">
+        </div>
+
+        <button class="btn-submit" onclick="tambahSaldoAdmin()">Tambahkan Saldo</button>
+        
+        <p class="info-text">Masukkan email user sesuai yang tertera di pesan Telegram Anda.</p>
+    </div>
+
+    <!-- Firebase SDK & Logika Admin -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBIkoKjrPOzvA-3jFl_SZV",
+            authDomain: "photobooth-v.firebaseapp.com",
+            projectId: "photobooth-v",
+            storageBucket: "photobooth-v.firebasestorage.app",
+            messagingSenderId: "1031549781795",
+            appId: "1:1031549781795:web:7cdb9f51",
+            measurementId: "G-ZZQJJKJ1BD"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.tambahSaldoAdmin = async function() {
+            const email = document.getElementById('targetEmail').value.trim();
+            const nominalInput = document.getElementById('jumlahSaldo').value;
+
+            if (!email || !nominalInput) {
+                alert("Email dan jumlah saldo tidak boleh kosong!");
+                return;
+            }
+
+            const nominal = parseInt(nominalInput);
+
+            try {
+                const userRef = doc(db, "users", email);
+                const userSnap = await getDoc(userRef);
+
+                if (!userSnap.exists()) {
+                    // Jika user belum terdaftar di database, buatkan dokumen baru dengan saldo tersebut
+                    await setDoc(userRef, {
+                        email: email,
+                        saldo: nominal,
+                        loginTerakhir: serverTimestamp()
+                    });
+                } else {
+                    // Jika sudah ada, tambahkan saldonya secara otomatis
+                    await updateDoc(userRef, {
+                        saldo: increment(nominal)
+                    });
+                }
+
+                alert(`Berhasil! Saldo sebesar Rp ${nominal.toLocaleString('id-ID')} telah ditambahkan ke akun ${email}`);
+                
+                // Reset form
+                document.getElementById('targetEmail').value = '';
+                document.getElementById('jumlahSaldo').value = '';
+
+            } catch (error) {
+                console.error("Gagal menambah saldo:", error);
+                alert("Terjadi kesalahan saat memperbarui database.");
+            }
+        }
+    </script>
+</body>
+</html>
